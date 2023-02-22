@@ -37,3 +37,10 @@ model User {
   deleteAt    Boolean  @default(false)
   isActive    Boolean  @default(false)
 }
+
+model Setting {
+  id    String @id @default(uuid())
+  group String
+  key   String
+  value String
+}
