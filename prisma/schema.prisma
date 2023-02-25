@@ -51,7 +51,7 @@ model Permission {
   displayName     String
   permission      String
   screen          String
-  deleted         Boolean
+  deleted         Boolean           @default(false)
   Role_Permission Role_Permission[]
 }
 
