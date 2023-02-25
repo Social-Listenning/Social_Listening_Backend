@@ -10,7 +10,9 @@ export class PermissionController {
   constructor(private readonly rolePermissionService: RolePermissionService) {}
 
   @Post('assign')
-  async assignPermission(@Body() data: RolePermissionDTO) {
+  async assignPermission(
+    @Body() data: RolePermissionDTO,
+  ): Promise<ReturnResult<boolean>> {
     const result = new ReturnResult<boolean>();
     try {
       const { roleId, permissionId } = data;

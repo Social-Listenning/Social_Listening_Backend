@@ -52,6 +52,11 @@ export class AppService implements OnModuleInit {
       },
       {
         group: 'ACTIVATE_ACCOUNT',
+        key: 'REFRESH_TOKEN_EXPIRATION_TIME',
+        value: '43200',
+      },
+      {
+        group: 'ACTIVATE_ACCOUNT',
         key: 'TOKEN_SECRET',
         value: '@N0tH3r_Pa55',
       },
@@ -61,6 +66,16 @@ export class AppService implements OnModuleInit {
         displayName: 'Get All Users',
         permission: 'table-user',
         screen: 'Users',
+      },
+      {
+        displayName: 'Assign Permission to Role',
+        permission: 'assign-permission',
+        screen: 'Permissions',
+      },
+      {
+        displayName: 'Remove Permission of Role',
+        permission: 'remove-permission',
+        screen: 'Permissions',
       },
     ];
   }

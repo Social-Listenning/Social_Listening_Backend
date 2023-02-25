@@ -10,6 +10,8 @@ import { excludeData } from 'src/utils/excludeData';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { User } from '../model/user.model';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
+import { excludeUser } from '../model/exclude.model';
+import { RolePermissionService } from 'src/modules/permission/services/rolePermission.service';
 
 @Injectable()
 export class UserService {
@@ -18,6 +20,7 @@ export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly roleService: RoleService,
+    private readonly rolePermissionService: RolePermissionService,
   ) {}
 
   async createUser(userData: CreateUserDTO, fromStartupApp = false) {
@@ -81,5 +84,21 @@ export class UserService {
       }
       throw error;
     }
+  }
+
+  async getUserInfo(userId: string) {
+    const user = await this.prismaService.user.findFirst({
+      where: { id: userId },
+      include: { role: true },
+    });
+    const newData = excludeData(user, excludeUser);
+    const roleName = newData.role.roleName;
+    const listPermission =
+      await this.rolePermissionService.getAllPermissionOfRole(newData.role.id);
+    return {
+      ...newData,
+      role: roleName,
+      permissions: listPermission,
+    };
   }
 }

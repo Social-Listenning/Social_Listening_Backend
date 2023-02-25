@@ -35,4 +35,16 @@ export class RolePermissionService {
       console.log(error);
     }
   }
+
+  async getAllPermissionOfRole(roleId: string) {
+    const data = await this.prismaService.permission.findMany({
+      where: {
+        Role_Permission: {
+          some: { roleId: roleId },
+        },
+      },
+      select: { permission: true },
+    });
+    return data.map((permission) => permission.permission);
+  }
 }
