@@ -27,7 +27,28 @@ export class AppService implements OnModuleInit {
       email: 'admin@social-listening.com',
       password: '@N0tH3r_Pa55',
     };
-    this.listSetting = [{ group: 'EMAIL', key: 'SENDGRID_API_KEY', value: '' }];
+    this.listSetting = [
+      {
+        group: 'EMAIL',
+        key: 'SENDGRID_API_KEY',
+        value: '',
+      },
+      {
+        group: 'DOMAIN',
+        key: 'EMAIL_CONFIRMATION_URL',
+        value: 'http://localhost:3000/auth/confirm-email',
+      },
+      {
+        group: 'ACTIVATE_ACCOUNT',
+        key: 'TOKEN_EXPIRATION_TIME',
+        value: '43200',
+      },
+      {
+        group: 'ACTIVATE_ACCOUNT',
+        key: 'TOKEN_SECRET',
+        value: '@N0tH3r_Pa55',
+      },
+    ];
   }
 
   async onModuleInit() {
@@ -56,7 +77,7 @@ export class AppService implements OnModuleInit {
 
     if (!existingUser) {
       const newUser = await this.userService.createUser(this.adminInfo, true);
-      await this.userService.activeAccount(newUser.id);
+      await this.userService.activeAccount(newUser.result.id);
     }
 
     this.logger.log('Creating new user');
