@@ -1,8 +1,17 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { RegisterDTO } from '../dtos/register.dto';
 import { ConfirmEmailDTO } from '../dtos/comfirmEmail.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
+import RequestWithUser from '../interface/requestWithUser.interface';
+import { LocalAuthGuard } from '../guards/localAuth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -23,5 +32,13 @@ export class AuthController {
       result.message = error.message;
     }
     return result;
+  }
+
+  @HttpCode(200)
+  @UseGuards(LocalAuthGuard)
+  @Post('log-in')
+  async logIn(@Req() request: RequestWithUser) {
+    const user = request.user;
+    return user;
   }
 }

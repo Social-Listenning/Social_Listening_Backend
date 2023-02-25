@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { UserService } from 'src/modules/users/services/user.service';
 import { RegisterDTO } from '../dtos/register.dto';
 import { EmailQueueService } from 'src/modules/queue/services/email.queue.service';
@@ -7,6 +13,8 @@ import { SettingService } from 'src/modules/setting/service/setting.service';
 import { JwtService } from '@nestjs/jwt';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { User } from 'src/modules/users/model/user.model';
+import { comparePassword } from 'src/utils/hashPassword';
+import { excludeData } from 'src/utils/excludeData';
 
 @Injectable()
 export class AuthService {
@@ -106,5 +114,34 @@ export class AuthService {
       throw new BadRequestException('Email already confirmed');
     }
     return await this.userService.activeAccount(user.id);
+  }
+
+  async getAuthenticatedUser(email: string, hashedPassword: string) {
+    const result = new ReturnResult<User>();
+    try {
+      const user = await this.userService.getUserByEmail(email);
+      const isPasswordMatching = await comparePassword(
+        hashedPassword,
+        user.password,
+      );
+
+      if (!isPasswordMatching) throw new Error('Wrong credentials provided');
+      result.result = excludeData(user, [
+        'password',
+        'createdAt',
+        'updatedAt',
+        'roleId',
+        'deleteAt',
+        'isActive',
+      ]);
+    } catch (error) {
+      this.logger.log(`Email ${email} login account fail`);
+      result.message = error.message;
+      throw new HttpException(
+        'Wrong credentials provided',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return result;
   }
 }
