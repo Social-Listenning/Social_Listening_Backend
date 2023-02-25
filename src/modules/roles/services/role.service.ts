@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { CreateRoleDTO } from '../dtos/createRole.dto';
 
 @Injectable()
 export class RoleService {
+  private readonly logger = new Logger(RoleService.name);
   constructor(private readonly prismaService: PrismaService) {}
 
   async createRole(role: CreateRoleDTO) {

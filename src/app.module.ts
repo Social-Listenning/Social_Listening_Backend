@@ -6,10 +6,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { SettingModule } from './modules/setting/setting.module';
 import { MailModule } from './modules/mail/mail.module';
 import { QueueModule } from './modules/queue/queue.module';
+import { PermissionModule } from './modules/permission/permission.module';
 
 @Module({
   imports: [
     RoleModule,
+    PermissionModule,
     UserModule,
     AuthModule,
     SettingModule,

@@ -1,3 +1,4 @@
+import { CreatePermissionDTO } from './modules/permission/dtos/createPermission.dto';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { RoleService } from './modules/roles/services/role.service';
 import { UserService } from './modules/users/services/user.service';
@@ -5,19 +6,25 @@ import { CreateRoleDTO } from './modules/roles/dtos/createRole.dto';
 import { CreateUserDTO } from './modules/users/dtos/createUser.dto';
 import { SettingService } from './modules/setting/service/setting.service';
 import { CreateSettingDTO } from './modules/setting/dto/createSetting.dto';
+import { PermissionService } from './modules/permission/services/permission.service';
+import { RolePermissionService } from './modules/permission/services/rolePermission.service';
 
 @Injectable()
 export class AppService implements OnModuleInit {
   private readonly logger = new Logger(AppService.name);
 
   adminInfo: CreateUserDTO;
+  adminId: string;
   listSetting: CreateSettingDTO[];
   listDefaultRole: CreateRoleDTO[];
+  listPermission: CreatePermissionDTO[];
 
   constructor(
     private readonly roleService: RoleService,
     private readonly userService: UserService,
     private readonly settingService: SettingService,
+    private readonly permissionService: PermissionService,
+    private readonly rolePermissionService: RolePermissionService,
   ) {
     this.listDefaultRole = [
       { roleName: 'ADMIN', level: 5 },
@@ -49,12 +56,20 @@ export class AppService implements OnModuleInit {
         value: '@N0tH3r_Pa55',
       },
     ];
+    this.listPermission = [
+      {
+        displayName: 'Get All Users',
+        permission: 'table-user',
+        screen: 'Users',
+      },
+    ];
   }
 
   async onModuleInit() {
+    await this.createDefaultSetting();
     await this.createDefaultRole();
     await this.createDefauttAdmin();
-    await this.createDefaultSetting();
+    await this.createDefaultPermission();
   }
 
   private async createDefaultRole() {
@@ -64,7 +79,10 @@ export class AppService implements OnModuleInit {
           role.roleName,
         );
 
-        if (!existRole) await this.roleService.createRole(role);
+        if (!existRole) {
+          const newRole = await this.roleService.createRole(role);
+          if (role.roleName === 'ADMIN') this.adminId = newRole.id;
+        } else if (existRole.roleName === 'ADMIN') this.adminId = existRole.id;
       }),
     );
     this.logger.log('Creating new roles');
@@ -79,7 +97,6 @@ export class AppService implements OnModuleInit {
       const newUser = await this.userService.createUser(this.adminInfo, true);
       await this.userService.activeAccount(newUser.result.id);
     }
-
     this.logger.log('Creating new user');
   }
 
@@ -95,5 +112,27 @@ export class AppService implements OnModuleInit {
       }),
     );
     this.logger.log('Creating new setting');
+  }
+
+  private async createDefaultPermission() {
+    await Promise.all(
+      this.listPermission.map(async (permission) => {
+        const existingPermission =
+          await this.permissionService.getPermissionByName(
+            permission.permission,
+          );
+
+        if (!existingPermission) {
+          const newPermission = await this.permissionService.createPermission(
+            permission,
+          );
+          await this.rolePermissionService.assignPermissionToRole(
+            this.adminId,
+            newPermission.id,
+          );
+        }
+      }),
+    );
+    this.logger.log('Create new permission and assign to admin');
   }
 }
