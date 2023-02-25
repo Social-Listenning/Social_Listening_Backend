@@ -5,10 +5,18 @@ import { UserModule } from '../users/user.module';
 import { QueueModule } from '../queue/queue.module';
 import { SettingModule } from '../setting/setting.module';
 import { JwtModule } from '@nestjs/jwt';
+import { LocalStrategy } from './guards/local.strategy';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
-  imports: [UserModule, QueueModule, SettingModule, JwtModule.register({})],
-  providers: [AuthService],
+  imports: [
+    UserModule,
+    QueueModule,
+    SettingModule,
+    JwtModule.register({}),
+    PassportModule,
+  ],
+  providers: [AuthService, LocalStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })
