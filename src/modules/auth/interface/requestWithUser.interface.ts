@@ -1,8 +1,11 @@
 import { Request } from 'express';
 import { User } from 'src/modules/users/model/user.model';
 
-interface RequestWithUser extends Request {
-  user: User;
+interface UserExtend extends User {
+  role: string;
+  permission: string[];
 }
 
-export default RequestWithUser;
+export interface RequestWithUser extends Request {
+  user: UserExtend;
+}

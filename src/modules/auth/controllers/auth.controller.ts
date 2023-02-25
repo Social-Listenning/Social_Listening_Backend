@@ -10,7 +10,7 @@ import { AuthService } from '../services/auth.service';
 import { RegisterDTO } from '../dtos/register.dto';
 import { ConfirmEmailDTO } from '../dtos/comfirmEmail.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
-import RequestWithUser from '../interface/requestWithUser.interface';
+import { RequestWithUser } from '../interface/requestWithUser.interface';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
 
 @Controller('auth')
@@ -39,6 +39,11 @@ export class AuthController {
   @Post('log-in')
   async logIn(@Req() request: RequestWithUser) {
     const user = request.user;
-    return user;
+    const access = await this.authService.getJwtToken(user.id, 'ACCESS');
+    const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
+    return {
+      accessToken: access,
+      refreshToken: refresh,
+    };
   }
 }

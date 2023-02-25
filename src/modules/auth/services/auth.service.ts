@@ -144,4 +144,30 @@ export class AuthService {
     }
     return result;
   }
+
+  async getJwtToken(userId: string, type = 'ACCESS_TOKEN') {
+    const tokenSecretSetting =
+      await this.settingService.getSettingByKeyAndGroup(
+        'TOKEN_SECRET',
+        'ACTIVATE_ACCOUNT',
+      );
+    const tokenExpireTime = await this.settingService.getSettingByKeyAndGroup(
+      type === 'ACCESS'
+        ? 'TOKEN_EXPIRATION_TIME'
+        : 'REFRESH_TOKEN_EXPIRATION_TIME',
+      'ACTIVATE_ACCOUNT',
+    );
+
+    const userData = await this.getUserInfo(userId);
+    const payload = userData;
+    const token = this.jwtService.sign(payload, {
+      secret: tokenSecretSetting.value,
+      expiresIn: `${tokenExpireTime.value}s`,
+    });
+    return token;
+  }
+
+  private async getUserInfo(userId: string) {
+    return await this.userService.getUserInfo(userId);
+  }
 }
