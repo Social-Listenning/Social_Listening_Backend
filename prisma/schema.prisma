@@ -17,10 +17,11 @@ enum Gender {
 }
 
 model Role {
-  id       String @id @default(uuid())
-  roleName String
-  level    Int    @default(1)
-  User     User[]
+  id              String            @id @default(uuid())
+  roleName        String
+  level           Int               @default(1)
+  User            User[]
+  Role_Permission Role_Permission[]
 }
 
 model User {
@@ -43,4 +44,22 @@ model Setting {
   group String
   key   String
   value String
+}
+
+model Permission {
+  id              String            @id @default(uuid())
+  displayName     String
+  permission      String
+  screen          String
+  deleted         Boolean
+  Role_Permission Role_Permission[]
+}
+
+model Role_Permission {
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId String
+
+  @@id([roleId, permissionId])
 }
