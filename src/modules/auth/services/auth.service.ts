@@ -15,6 +15,7 @@ import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { User } from 'src/modules/users/model/user.model';
 import { comparePassword } from 'src/utils/hashPassword';
 import { excludeData } from 'src/utils/excludeData';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 
 @Injectable()
 export class AuthService {
@@ -183,6 +184,16 @@ export class AuthService {
 
   async setRefreshToken(refreshToken: string, userId: string) {
     return await this.userService.setRefreshToken(refreshToken, userId);
+  }
+
+  async removeToken(userId: string) {
+    let result = new ReturnResult<boolean>();
+    try {
+      result = await this.userService.removeToken(userId);
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
   }
 
   private async getUserInfo(userId: string) {
