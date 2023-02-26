@@ -132,6 +132,7 @@ export class AuthService {
         'updatedAt',
         'roleId',
         'deleteAt',
+        'refreshToken',
       ]);
     } catch (error) {
       this.logger.log(`Email ${email} login account fail`);
@@ -178,6 +179,10 @@ export class AuthService {
       result.message = 'Email already confirmed';
     }
     return result;
+  }
+
+  async setRefreshToken(refreshToken: string, userId: string) {
+    return await this.userService.setRefreshToken(refreshToken, userId);
   }
 
   private async getUserInfo(userId: string) {

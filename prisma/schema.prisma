@@ -25,18 +25,22 @@ model Role {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  email       String   @unique
-  userName    String
-  fullName    String
-  phoneNumber String?
-  password    String
-  role        Role     @relation(fields: [roleId], references: [id])
-  roleId      String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deleteAt    Boolean  @default(false)
-  isActive    Boolean  @default(false)
+  id           String   @id @default(uuid())
+  email        String   @unique
+  userName     String
+  fullName     String
+  phoneNumber  String?
+  refreshToken String?
+  password     String
+  role         Role     @relation(fields: [roleId], references: [id])
+  roleId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deleteAt     Boolean  @default(false)
+  isActive     Boolean  @default(false)
+
+  @@index([email])
+  @@index([refreshToken])
 }
 
 model Setting {

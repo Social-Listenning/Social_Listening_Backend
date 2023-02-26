@@ -9,6 +9,7 @@ import { LocalStrategy } from './guards/local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { SettingService } from '../setting/service/setting.service';
 import { JwtStrategy } from './guards/jwt.stategy';
+import { JwtRefreshStrategy } from './guards/refresh.stategy';
 
 @Module({
   imports: [
@@ -42,7 +43,7 @@ import { JwtStrategy } from './guards/jwt.stategy';
       },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })

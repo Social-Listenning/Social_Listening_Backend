@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
@@ -13,6 +14,7 @@ import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { RequestWithUser } from '../interface/requestWithUser.interface';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
 import { JWTAuthGuard } from '../guards/jwtAuth.guard';
+import JWTRefreshGuard from '../guards/jwtRefresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -42,6 +44,9 @@ export class AuthController {
     const user = request.user;
     const access = await this.authService.getJwtToken(user.id, 'ACCESS');
     const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
+
+    await this.authService.setRefreshToken(refresh, user.id);
+
     return {
       accessToken: access,
       refreshToken: refresh,
@@ -52,5 +57,20 @@ export class AuthController {
   @UseGuards(JWTAuthGuard)
   async resendToken(@Req() request: RequestWithUser) {
     return await this.authService.resendConfirmationLink(request.user.id);
+  }
+
+  @UseGuards(JWTRefreshGuard)
+  @Get('refresh-token')
+  async refresh(@Req() request: RequestWithUser) {
+    const user = request.user;
+    const access = await this.authService.getJwtToken(user.id, 'ACCESS');
+    const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
+
+    await this.authService.setRefreshToken(refresh, user.id);
+
+    return {
+      accessToken: access,
+      refreshToken: refresh,
+    };
   }
 }

@@ -12,6 +12,7 @@ import { User } from '../model/user.model';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { excludeUser } from '../model/exclude.model';
 import { RolePermissionService } from 'src/modules/permission/services/rolePermission.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -47,6 +48,7 @@ export class UserService {
         'updatedAt',
         'roleId',
         'deleteAt',
+        'refreshToken',
       ]);
     } catch (error) {
       this.logger.error(`Function: CreateUser, Error: ${error.message}`);
@@ -99,5 +101,22 @@ export class UserService {
       role: roleName,
       permissions: listPermission,
     };
+  }
+
+  async setRefreshToken(refreshToken: string, userId: string) {
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    await this.prismaService.user.update({
+      where: { id: userId },
+      data: { refreshToken: hashedRefreshToken },
+    });
+  }
+
+  async getUserByToken(refreshToken: string, userId: string) {
+    const user = await this.getUserById(userId);
+
+    const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+
+    if (isMatch) return user;
+    else return null;
   }
 }
