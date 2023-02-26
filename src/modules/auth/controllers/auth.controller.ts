@@ -12,6 +12,7 @@ import { ConfirmEmailDTO } from '../dtos/comfirmEmail.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { RequestWithUser } from '../interface/requestWithUser.interface';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
+import { JWTAuthGuard } from '../guards/jwtAuth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -36,7 +37,7 @@ export class AuthController {
 
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
-  @Post('log-in')
+  @Post('/log-in')
   async logIn(@Req() request: RequestWithUser) {
     const user = request.user;
     const access = await this.authService.getJwtToken(user.id, 'ACCESS');
@@ -45,5 +46,11 @@ export class AuthController {
       accessToken: access,
       refreshToken: refresh,
     };
+  }
+
+  @Post('/resend-token')
+  @UseGuards(JWTAuthGuard)
+  async resendToken(@Req() request: RequestWithUser) {
+    return await this.authService.resendConfirmationLink(request.user.id);
   }
 }
