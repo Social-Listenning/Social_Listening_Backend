@@ -132,7 +132,6 @@ export class AuthService {
         'updatedAt',
         'roleId',
         'deleteAt',
-        'isActive',
       ]);
     } catch (error) {
       this.logger.log(`Email ${email} login account fail`);

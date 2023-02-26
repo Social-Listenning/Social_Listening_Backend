@@ -47,7 +47,6 @@ export class UserService {
         'updatedAt',
         'roleId',
         'deleteAt',
-        'isActive',
       ]);
     } catch (error) {
       this.logger.error(`Function: CreateUser, Error: ${error.message}`);
