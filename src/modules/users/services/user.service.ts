@@ -119,4 +119,18 @@ export class UserService {
     if (isMatch) return user;
     else return null;
   }
+
+  async removeToken(userId: string) {
+    const result = new ReturnResult<boolean>();
+    try {
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: { refreshToken: null },
+      });
+      result.result = true;
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
+  }
 }

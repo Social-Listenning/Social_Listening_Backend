@@ -15,6 +15,8 @@ import { RequestWithUser } from '../interface/requestWithUser.interface';
 import { LocalAuthGuard } from '../guards/localAuth.guard';
 import { JWTAuthGuard } from '../guards/jwtAuth.guard';
 import JWTRefreshGuard from '../guards/jwtRefresh.guard';
+import { Token } from '../dtos/token.dto';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -42,15 +44,17 @@ export class AuthController {
   @Post('/log-in')
   async logIn(@Req() request: RequestWithUser) {
     const user = request.user;
-    const access = await this.authService.getJwtToken(user.id, 'ACCESS');
-    const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
+    const result = new ReturnResult<Token>();
+    try {
+      const access = await this.authService.getJwtToken(user.id, 'ACCESS');
+      const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
 
-    await this.authService.setRefreshToken(refresh, user.id);
-
-    return {
-      accessToken: access,
-      refreshToken: refresh,
-    };
+      await this.authService.setRefreshToken(refresh, user.id);
+      result.result = new Token(access, refresh);
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
   }
 
   @Post('/resend-token')
@@ -63,14 +67,23 @@ export class AuthController {
   @Get('refresh-token')
   async refresh(@Req() request: RequestWithUser) {
     const user = request.user;
-    const access = await this.authService.getJwtToken(user.id, 'ACCESS');
-    const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
+    const result = new ReturnResult<Token>();
+    try {
+      const access = await this.authService.getJwtToken(user.id, 'ACCESS');
+      const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
 
-    await this.authService.setRefreshToken(refresh, user.id);
+      await this.authService.setRefreshToken(refresh, user.id);
+      result.result = new Token(access, refresh);
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
+  }
 
-    return {
-      accessToken: access,
-      refreshToken: refresh,
-    };
+  @Post('/log-out')
+  @UseGuards(JWTAuthGuard)
+  async logout(@Req() request: RequestWithUser) {
+    const user = request.user;
+    return await this.authService.removeToken(user.id);
   }
 }
