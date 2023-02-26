@@ -166,6 +166,20 @@ export class AuthService {
     return token;
   }
 
+  async resendConfirmationLink(userId: string) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const user = await this.userService.getUserById(userId);
+      if (user.isActive) throw new Error();
+
+      result.result = true;
+      await this.sendVerificationLink(user.email);
+    } catch (error) {
+      result.message = 'Email already confirmed';
+    }
+    return result;
+  }
+
   private async getUserInfo(userId: string) {
     return await this.userService.getUserInfo(userId);
   }
