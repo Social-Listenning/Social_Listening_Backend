@@ -1,3 +1,4 @@
+import { UpdateAccountDTO } from './../dtos/updateAccount.dto';
 import {
   BadRequestException,
   HttpException,
@@ -194,6 +195,10 @@ export class AuthService {
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
     return result;
+  }
+
+  async updateAccount(userId: string, data: UpdateAccountDTO) {
+    return await this.userService.updateAccount(userId, data);
   }
 
   private async getUserInfo(userId: string) {

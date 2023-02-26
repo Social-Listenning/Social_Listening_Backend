@@ -13,6 +13,7 @@ import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { excludeUser } from '../model/exclude.model';
 import { RolePermissionService } from 'src/modules/permission/services/rolePermission.service';
 import * as bcrypt from 'bcrypt';
+import { UpdateAccountDTO } from 'src/modules/auth/dtos/updateAccount.dto';
 
 @Injectable()
 export class UserService {
@@ -129,6 +130,35 @@ export class UserService {
       });
       result.result = true;
     } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
+  }
+
+  async updateAccount(userId: string, data: UpdateAccountDTO) {
+    const result = new ReturnResult<User>();
+    try {
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: {
+          email: data.email,
+          userName: data.userName,
+          fullName: data.fullName,
+          phoneNumber: data?.phoneNumber,
+        },
+      });
+
+      const user = await this.getUserById(userId);
+      result.result = excludeData(user, [
+        'password',
+        'createdAt',
+        'updatedAt',
+        'roleId',
+        'deleteAt',
+        'refreshToken',
+      ]);
+    } catch (error) {
+      console.log(error);
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
     return result;
