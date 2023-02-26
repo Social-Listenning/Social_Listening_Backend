@@ -8,6 +8,9 @@ import { SettingService } from './modules/setting/service/setting.service';
 import { CreateSettingDTO } from './modules/setting/dto/createSetting.dto';
 import { PermissionService } from './modules/permission/services/permission.service';
 import { RolePermissionService } from './modules/permission/services/rolePermission.service';
+import { ConvertObjectToArray, toDTO } from './utils/convert';
+import { PermissionPerm } from './modules/permission/enum/permission.enum';
+import { UserPerm } from './modules/users/enum/permission.enum';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -62,21 +65,12 @@ export class AppService implements OnModuleInit {
       },
     ];
     this.listPermission = [
-      {
-        displayName: 'Get All Users',
-        permission: 'table-user',
-        screen: 'Users',
-      },
-      {
-        displayName: 'Assign Permission to Role',
-        permission: 'assign-permission',
-        screen: 'Permissions',
-      },
-      {
-        displayName: 'Remove Permission of Role',
-        permission: 'remove-permission',
-        screen: 'Permissions',
-      },
+      ...ConvertObjectToArray(UserPerm).map((permission) =>
+        toDTO(permission, CreatePermissionDTO),
+      ),
+      ...ConvertObjectToArray(PermissionPerm).map((permission) =>
+        toDTO(permission, CreatePermissionDTO),
+      ),
     ];
   }
 

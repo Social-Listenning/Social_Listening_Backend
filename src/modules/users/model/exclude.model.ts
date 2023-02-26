@@ -6,5 +6,4 @@ export const excludeUser: (keyof User)[] = [
   'updatedAt',
   'roleId',
   'deleteAt',
-  'isActive',
 ];
