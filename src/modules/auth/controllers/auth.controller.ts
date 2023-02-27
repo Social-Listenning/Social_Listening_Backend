@@ -18,6 +18,7 @@ import JWTRefreshGuard from '../guards/jwtRefresh.guard';
 import { Token } from '../dtos/token.dto';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
+import { UpdateAccountDTO } from '../dtos/updateAccount.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -96,5 +97,15 @@ export class AuthController {
   ) {
     const user = request.user;
     return await this.authService.updatePassword(user.id, data);
+  }
+
+  @Post('/update-account')
+  @UseGuards(JWTAuthGuard)
+  async updateInformation(
+    @Req() request: RequestWithUser,
+    @Body() data: UpdateAccountDTO,
+  ) {
+    const user = request.user;
+    return await this.authService.updateAccount(user.id, data);
   }
 }
