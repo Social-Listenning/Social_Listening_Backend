@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -19,6 +20,8 @@ import { Token } from '../dtos/token.dto';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 import { UpdateAccountDTO } from '../dtos/updateAccount.dto';
+import { ForgotPasswordDTO } from '../dtos/forgotPassword.dto';
+import { ResetPasswordDTO } from '../dtos/resetPassword.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -107,5 +110,21 @@ export class AuthController {
   ) {
     const user = request.user;
     return await this.authService.updateAccount(user.id, data);
+  }
+
+  @Post('/forgot-password')
+  async forgotPassword(@Body() data: ForgotPasswordDTO) {
+    await this.authService.forgotPassword(data.email);
+  }
+
+  @Post('/reset-password/:token')
+  async resetPassword(@Param() { token }, @Body() data: ResetPasswordDTO) {
+    const decodeData = await this.authService.decodeResetToken(token);
+    if (decodeData.message == null)
+      return await this.authService.resetPassword(
+        decodeData.result,
+        data.password,
+      );
+    else return decodeData;
   }
 }

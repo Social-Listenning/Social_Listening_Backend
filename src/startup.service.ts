@@ -49,6 +49,11 @@ export class AppService implements OnModuleInit {
         value: 'http://localhost:3000/auth/confirm-email',
       },
       {
+        group: 'DOMAIN',
+        key: 'RECOVERY_PASSWORD_URL',
+        value: 'http://localhost:300/auth/recovery-password',
+      },
+      {
         group: 'ACTIVATE_ACCOUNT',
         key: 'TOKEN_EXPIRATION_TIME',
         value: '43200',
