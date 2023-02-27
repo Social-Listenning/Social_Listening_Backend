@@ -3,7 +3,7 @@ import { PrismaService } from 'src/config/database/database.config.service';
 import { CreateUserDTO } from '../dtos/createUser.dto';
 import { CreateUserInput } from '../dtos/createUser.input';
 import { RoleService } from 'src/modules/roles/services/role.service';
-import { hashedPasword } from 'src/utils/hashPassword';
+import { comparePassword, hashedPasword } from 'src/utils/hashPassword';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaError } from 'src/utils/PrismaError';
 import { excludeData } from 'src/utils/excludeData';
@@ -13,6 +13,7 @@ import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { excludeUser } from '../model/exclude.model';
 import { RolePermissionService } from 'src/modules/permission/services/rolePermission.service';
 import * as bcrypt from 'bcrypt';
+import { UpdatePasswordDTO } from 'src/modules/auth/dtos/updatePassword.dto';
 import { UpdateAccountDTO } from 'src/modules/auth/dtos/updateAccount.dto';
 
 @Injectable()
@@ -119,6 +120,29 @@ export class UserService {
 
     if (isMatch) return user;
     else return null;
+  }
+
+  async updatePassword(userId: string, data: UpdatePasswordDTO) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const user = await this.prismaService.user.findFirst({
+        where: { id: userId },
+      });
+
+      const isMatch = await comparePassword(data.oldPassword, user.password);
+      if (!isMatch) throw new Error();
+
+      const hashedPassword = await hashedPasword(data.newPassword);
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+      });
+
+      result.result = true;
+    } catch (error) {
+      result.message = 'Old Password does not match';
+    }
+    return result;
   }
 
   async removeToken(userId: string) {

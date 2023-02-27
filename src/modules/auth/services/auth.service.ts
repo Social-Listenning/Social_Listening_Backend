@@ -17,6 +17,7 @@ import { User } from 'src/modules/users/model/user.model';
 import { comparePassword } from 'src/utils/hashPassword';
 import { excludeData } from 'src/utils/excludeData';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
+import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 
 @Injectable()
 export class AuthService {
@@ -195,6 +196,10 @@ export class AuthService {
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
     return result;
+  }
+
+  async updatePassword(userId: string, data: UpdatePasswordDTO) {
+    return await this.userService.updatePassword(userId, data);
   }
 
   async updateAccount(userId: string, data: UpdateAccountDTO) {
