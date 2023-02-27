@@ -1,3 +1,4 @@
+import { TokenService } from './../../token/services/token.service';
 import {
   Body,
   Controller,
@@ -25,7 +26,10 @@ import { ResetPasswordDTO } from '../dtos/resetPassword.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
+  ) {}
 
   @Post('/register')
   async register(@Body() registrationData: RegisterDTO) {
@@ -36,7 +40,11 @@ export class AuthController {
   async confirm(@Body() data: ConfirmEmailDTO): Promise<ReturnResult<boolean>> {
     const result = new ReturnResult<boolean>();
     try {
-      const email = await this.authService.decodeToken(data.token);
+      const tokenId = data.token;
+      const token = await this.tokenService.getToken(tokenId);
+      if (!token) throw new Error(`Invalid token`);
+
+      const email = await this.authService.decodeToken(token);
       result.result = await this.authService.confirmEmail(email);
     } catch (error) {
       result.message = error.message;
@@ -114,17 +122,26 @@ export class AuthController {
 
   @Post('/forgot-password')
   async forgotPassword(@Body() data: ForgotPasswordDTO) {
-    await this.authService.forgotPassword(data.email);
+    return await this.authService.forgotPassword(data.email);
   }
 
-  @Post('/reset-password/:token')
-  async resetPassword(@Param() { token }, @Body() data: ResetPasswordDTO) {
-    const decodeData = await this.authService.decodeResetToken(token);
-    if (decodeData.message == null)
-      return await this.authService.resetPassword(
-        decodeData.result,
-        data.password,
-      );
-    else return decodeData;
+  @Post('/reset-password/:tokenId')
+  async resetPassword(@Param() { tokenId }, @Body() data: ResetPasswordDTO) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const token = await this.tokenService.getToken(tokenId);
+      if (!token) throw new Error(`Invalid token`);
+
+      const decodeData = await this.authService.decodeResetToken(token);
+      if (decodeData.message == null)
+        return await this.authService.resetPassword(
+          decodeData.result,
+          data.password,
+        );
+      else throw new Error(decodeData.message);
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
   }
 }

@@ -19,6 +19,7 @@ import { excludeData } from 'src/utils/excludeData';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 import { RecoveryPasswordPayload } from '../dtos/recoveryPassword.payload';
+import { TokenService } from 'src/modules/token/services/token.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly tokenService: TokenService,
     private readonly settingService: SettingService,
     private readonly emailQueueService: EmailQueueService,
   ) {}
@@ -179,6 +181,7 @@ export class AuthService {
       if (!user) throw new Error();
 
       await this.sendRecoveyPasswordLink(user);
+      result.result = true;
     } catch (error) {
       result.message = `Email ${email} is not found`;
     }
@@ -232,8 +235,9 @@ export class AuthService {
       secret: tokenSecretSetting.value,
       expiresIn: `${tokenExpireTime.value}s`,
     });
+    const tokenSecret = await this.tokenService.createToken(token);
 
-    const recoveryURL = `${URLRecovery.value}/?token=${token}`;
+    const recoveryURL = `${URLRecovery.value}/?token=${tokenSecret.id}`;
 
     return this.emailQueueService.addEmailToQueue({
       to: user.email,
@@ -269,7 +273,9 @@ export class AuthService {
       expiresIn: `${tokenExpireTime.value}s`,
     });
 
-    const activateUrl = `${URLConfirm.value}/?token=${token}`;
+    const tokenSecret = await this.tokenService.createToken(token);
+
+    const activateUrl = `${URLConfirm.value}/?token=${tokenSecret.id}`;
 
     return this.emailQueueService.addEmailToQueue({
       to: email,

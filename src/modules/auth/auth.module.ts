@@ -10,6 +10,7 @@ import { PassportModule } from '@nestjs/passport';
 import { SettingService } from '../setting/service/setting.service';
 import { JwtStrategy } from './guards/jwt.stategy';
 import { JwtRefreshStrategy } from './guards/refresh.stategy';
+import { TokenModule } from '../token/token.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JwtRefreshStrategy } from './guards/refresh.stategy';
     UserModule,
     QueueModule,
     SettingModule,
+    TokenModule,
     JwtModule.registerAsync({
       imports: [SettingModule],
       inject: [SettingService],
