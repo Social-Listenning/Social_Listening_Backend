@@ -67,3 +67,8 @@ model Role_Permission {
 
   @@id([roleId, permissionId])
 }
+
+model Token {
+  id    String @id @default(uuid())
+  token String
+}
