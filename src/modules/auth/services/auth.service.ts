@@ -18,6 +18,7 @@ import { comparePassword } from 'src/utils/hashPassword';
 import { excludeData } from 'src/utils/excludeData';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
+import { RecoveryPasswordPayload } from '../dtos/recoveryPassword.payload';
 
 @Injectable()
 export class AuthService {
@@ -51,41 +52,6 @@ export class AuthService {
       result.message = error.message;
     }
     return result;
-  }
-
-  async sendVerificationLink(email: string | null) {
-    if (!email) return;
-
-    const payload: VerificationTokenPayload = { email };
-    const tokenSecretSetting =
-      await this.settingService.getSettingByKeyAndGroup(
-        'TOKEN_SECRET',
-        'ACTIVATE_ACCOUNT',
-      );
-    const tokenExpireTime = await this.settingService.getSettingByKeyAndGroup(
-      'TOKEN_EXPIRATION_TIME',
-      'ACTIVATE_ACCOUNT',
-    );
-    const URLConfirm = await this.settingService.getSettingByKeyAndGroup(
-      'EMAIL_CONFIRMATION_URL',
-      'DOMAIN',
-    );
-
-    const token = this.jwtService.sign(payload, {
-      secret: tokenSecretSetting.value,
-      expiresIn: `${tokenExpireTime.value}s`,
-    });
-
-    const activateUrl = `${URLConfirm.value}/?token=${token}`;
-
-    return this.emailQueueService.addEmailToQueue({
-      to: email,
-      subject: 'Welcome to My App!',
-      template: './welcome',
-      context: {
-        activateUrl,
-      },
-    });
   }
 
   async decodeToken(token: string) {
@@ -204,6 +170,115 @@ export class AuthService {
 
   async updateAccount(userId: string, data: UpdateAccountDTO) {
     return await this.userService.updateAccount(userId, data);
+  }
+
+  async forgotPassword(email: string) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const user = await this.userService.getUserByEmail(email);
+      if (!user) throw new Error();
+
+      await this.sendRecoveyPasswordLink(user);
+    } catch (error) {
+      result.message = `Email ${email} is not found`;
+    }
+    return result;
+  }
+
+  async decodeResetToken(token: string) {
+    const result = new ReturnResult<string>();
+    try {
+      const tokenSecretSetting =
+        await this.settingService.getSettingByKeyAndGroup(
+          'TOKEN_SECRET',
+          'ACTIVATE_ACCOUNT',
+        );
+      const payload = await this.jwtService.verify(token, {
+        secret: tokenSecretSetting.value,
+      });
+
+      if (typeof payload === 'object' && 'id' in payload)
+        result.result = payload.id;
+      else throw new Error();
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError')
+        result.message = 'Reset password token expired';
+      else result.message = 'Wrong reset password token';
+    }
+    return result;
+  }
+
+  async resetPassword(userId: string, password: string) {
+    return await this.userService.resetPassword(userId, password);
+  }
+
+  private async sendRecoveyPasswordLink(user: User) {
+    const payload: RecoveryPasswordPayload = { id: user.id };
+    const tokenSecretSetting =
+      await this.settingService.getSettingByKeyAndGroup(
+        'TOKEN_SECRET',
+        'ACTIVATE_ACCOUNT',
+      );
+    const tokenExpireTime = await this.settingService.getSettingByKeyAndGroup(
+      'TOKEN_EXPIRATION_TIME',
+      'ACTIVATE_ACCOUNT',
+    );
+    const URLRecovery = await this.settingService.getSettingByKeyAndGroup(
+      'RECOVERY_PASSWORD_URL',
+      'DOMAIN',
+    );
+
+    const token = this.jwtService.sign(payload, {
+      secret: tokenSecretSetting.value,
+      expiresIn: `${tokenExpireTime.value}s`,
+    });
+
+    const recoveryURL = `${URLRecovery.value}/?token=${token}`;
+
+    return this.emailQueueService.addEmailToQueue({
+      to: user.email,
+      subject: 'Recovery Password',
+      template: './recoverryPassword',
+      context: {
+        recoveryURL: recoveryURL,
+        userName: user.userName,
+      },
+    });
+  }
+
+  private async sendVerificationLink(email: string | null) {
+    if (!email) return;
+
+    const payload: VerificationTokenPayload = { email };
+    const tokenSecretSetting =
+      await this.settingService.getSettingByKeyAndGroup(
+        'TOKEN_SECRET',
+        'ACTIVATE_ACCOUNT',
+      );
+    const tokenExpireTime = await this.settingService.getSettingByKeyAndGroup(
+      'TOKEN_EXPIRATION_TIME',
+      'ACTIVATE_ACCOUNT',
+    );
+    const URLConfirm = await this.settingService.getSettingByKeyAndGroup(
+      'EMAIL_CONFIRMATION_URL',
+      'DOMAIN',
+    );
+
+    const token = this.jwtService.sign(payload, {
+      secret: tokenSecretSetting.value,
+      expiresIn: `${tokenExpireTime.value}s`,
+    });
+
+    const activateUrl = `${URLConfirm.value}/?token=${token}`;
+
+    return this.emailQueueService.addEmailToQueue({
+      to: email,
+      subject: 'Welcome to My App!',
+      template: './welcome',
+      context: {
+        activateUrl,
+      },
+    });
   }
 
   private async getUserInfo(userId: string) {

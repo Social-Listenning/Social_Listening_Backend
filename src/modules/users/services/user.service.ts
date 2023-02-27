@@ -159,6 +159,20 @@ export class UserService {
     return result;
   }
 
+  async resetPassword(userId: string, password: string) {
+    const result = new ReturnResult<boolean>();
+    try {
+      await this.prismaService.user.update({
+        where: { id: userId },
+        data: { password: password },
+      });
+      result.result = true;
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
+  }
+
   async updateAccount(userId: string, data: UpdateAccountDTO) {
     const result = new ReturnResult<User>();
     try {
