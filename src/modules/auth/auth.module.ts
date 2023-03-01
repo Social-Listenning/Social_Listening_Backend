@@ -11,6 +11,7 @@ import { SettingService } from '../setting/service/setting.service';
 import { JwtStrategy } from './guards/jwt.stategy';
 import { JwtRefreshStrategy } from './guards/refresh.stategy';
 import { TokenModule } from '../token/token.module';
+import { LogModule } from '../logs/log.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TokenModule } from '../token/token.module';
     QueueModule,
     SettingModule,
     TokenModule,
+    LogModule,
     JwtModule.registerAsync({
       imports: [SettingModule],
       inject: [SettingService],
