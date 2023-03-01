@@ -23,10 +23,14 @@ import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 import { UpdateAccountDTO } from '../dtos/updateAccount.dto';
 import { ForgotPasswordDTO } from '../dtos/forgotPassword.dto';
 import { ResetPasswordDTO } from '../dtos/resetPassword.dto';
+import { LogService } from 'src/modules/logs/services/log.service';
+import { CreateLogDTO } from 'src/common/models/dto/log.dto';
+import { ActivityType } from 'src/common/enum/activityType.enum';
 
 @Controller('auth')
 export class AuthController {
   constructor(
+    private readonly logService: LogService,
     private readonly authService: AuthService,
     private readonly tokenService: TokenService,
   ) {}
@@ -63,6 +67,9 @@ export class AuthController {
       const refresh = await this.authService.getJwtToken(user.id, 'REFRESH');
 
       await this.authService.setRefreshToken(refresh, user.id);
+      await this.logService.createLog(
+        new CreateLogDTO(ActivityType.Login, user.userName),
+      );
       result.result = new Token(access, refresh);
     } catch (error) {
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;

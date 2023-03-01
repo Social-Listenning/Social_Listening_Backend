@@ -164,7 +164,7 @@ export class UserService {
     try {
       await this.prismaService.user.update({
         where: { id: userId },
-        data: { password: password },
+        data: { password: await hashedPasword(password) },
       });
       result.result = true;
     } catch (error) {
