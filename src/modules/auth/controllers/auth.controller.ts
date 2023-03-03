@@ -23,7 +23,7 @@ import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 import { UpdateAccountDTO } from '../dtos/updateAccount.dto';
 import { ForgotPasswordDTO } from '../dtos/forgotPassword.dto';
 import { ResetPasswordDTO } from '../dtos/resetPassword.dto';
-import { LogService } from 'src/modules/logs/services/log.service';
+import { LogService } from 'src/modules/activityLogs/services/log.service';
 import { CreateLogDTO } from 'src/common/models/dto/log.dto';
 import { ActivityType } from 'src/common/enum/activityType.enum';
 
