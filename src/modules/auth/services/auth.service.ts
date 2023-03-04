@@ -20,6 +20,7 @@ import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 import { RecoveryPasswordPayload } from '../dtos/recoveryPassword.payload';
 import { TokenService } from 'src/modules/token/services/token.service';
+import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
 
 @Injectable()
 export class AuthService {
@@ -30,6 +31,7 @@ export class AuthService {
     private readonly tokenService: TokenService,
     private readonly settingService: SettingService,
     private readonly emailQueueService: EmailQueueService,
+    private readonly socialGroupService: SocialGroupService,
   ) {}
 
   async register(registerData: RegisterDTO) {
@@ -47,7 +49,13 @@ export class AuthService {
       }
 
       const user = await this.userService.createUser(registerData);
-      await this.sendVerificationLink(user.result?.email);
+      if (user.result) {
+        await this.sendVerificationLink(user.result?.email);
+        await this.socialGroupService.createSocailGroup({
+          name: user.result.email,
+          managerId: user.result.id,
+        });
+      }
       result = user;
     } catch (error) {
       this.logger.error(`Function: registerAccount, Error: ${error.message}`);

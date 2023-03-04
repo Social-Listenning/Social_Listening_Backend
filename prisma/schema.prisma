@@ -91,7 +91,7 @@ model SocialGroup {
   name       String
   manager    User        @relation(fields: [managerId], references: [id])
   managerId  String      @unique
-  extendData String
+  extendData String?
   SocialTab  SocialTab[]
 }
 
