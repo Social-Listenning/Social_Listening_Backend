@@ -8,6 +8,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { TokenModule } from './modules/token/token.module';
+import { SocialGroupModule } from './modules/socialGroups/socialGroup.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { TokenModule } from './modules/token/token.module';
     MailModule,
     QueueModule,
     TokenModule,
+    SocialGroupModule,
   ],
   controllers: [],
   providers: [AppService],
