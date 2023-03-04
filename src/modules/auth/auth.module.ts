@@ -12,6 +12,7 @@ import { JwtStrategy } from './guards/jwt.stategy';
 import { JwtRefreshStrategy } from './guards/refresh.stategy';
 import { TokenModule } from '../token/token.module';
 import { LogModule } from '../activityLogs/log.module';
+import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { LogModule } from '../activityLogs/log.module';
         };
       },
     }),
+    SocialGroupModule,
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
   controllers: [AuthController],
