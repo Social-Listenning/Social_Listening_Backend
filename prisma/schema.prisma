@@ -25,21 +25,22 @@ model Role {
 }
 
 model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
+  id           String        @id @default(uuid())
+  email        String        @unique
   userName     String
   fullName     String
   phoneNumber  String?
   refreshToken String?
   password     String
-  role         Role         @relation(fields: [roleId], references: [id])
+  role         Role          @relation(fields: [roleId], references: [id])
   roleId       String
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  deleteAt     Boolean      @default(false)
-  isActive     Boolean      @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deleteAt     Boolean       @default(false)
+  isActive     Boolean       @default(false)
   socialGroup  SocialGroup?
   SocialTab    SocialTab[]
+  UserInGroup  UserInGroup[]
 
   @@index([email])
   @@index([refreshToken])
@@ -87,12 +88,13 @@ model ActivityLog {
 }
 
 model SocialGroup {
-  id         String      @id @default(uuid())
-  name       String
-  manager    User        @relation(fields: [managerId], references: [id])
-  managerId  String      @unique
-  extendData String?
-  SocialTab  SocialTab[]
+  id          String        @id @default(uuid())
+  name        String
+  manager     User          @relation(fields: [managerId], references: [id])
+  managerId   String        @unique
+  extendData  String?
+  SocialTab   SocialTab[]
+  UserInGroup UserInGroup[]
 }
 
 model SocialTab {
@@ -103,4 +105,13 @@ model SocialTab {
   manager   User        @relation(fields: [managerId], references: [id])
   managerId String
   delete    Boolean     @default(false)
+}
+
+model UserInGroup {
+  user    User        @relation(fields: [userId], references: [id])
+  userId  String
+  group   SocialGroup @relation(fields: [groupId], references: [id])
+  groupId String
+
+  @@id([userId, groupId])
 }

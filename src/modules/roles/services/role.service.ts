@@ -22,4 +22,16 @@ export class RoleService {
   async getRoleById(roleId: string) {
     return this.prismaService.role.findFirst({ where: { id: roleId } });
   }
+
+  async roleCanUse(roleLevel: number) {
+    const listRoles = await this.prismaService.role.findMany({
+      where: {
+        level: {
+          lt: roleLevel,
+        },
+      },
+    });
+
+    return listRoles;
+  }
 }

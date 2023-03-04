@@ -18,6 +18,7 @@ export class AppService implements OnModuleInit {
 
   adminInfo: CreateUserDTO;
   adminId: string;
+  ownerId: string;
   listSetting: CreateSettingDTO[];
   listDefaultRole: CreateRoleDTO[];
   listPermission: CreatePermissionDTO[];
@@ -32,6 +33,8 @@ export class AppService implements OnModuleInit {
     this.listDefaultRole = [
       { roleName: 'ADMIN', level: 5 },
       { roleName: 'OWNER', level: 4 },
+      { roleName: 'MANAGER', level: 3 },
+      { roleName: 'SUPPORTER', level: 2 },
     ];
     this.adminInfo = {
       email: 'admin@social-listening.com',
@@ -96,7 +99,11 @@ export class AppService implements OnModuleInit {
         if (!existRole) {
           const newRole = await this.roleService.createRole(role);
           if (role.roleName === 'ADMIN') this.adminId = newRole.id;
-        } else if (existRole.roleName === 'ADMIN') this.adminId = existRole.id;
+          else if (role.roleName === 'OWNER') this.ownerId = newRole.id;
+        } else {
+          if (existRole.roleName === 'ADMIN') this.adminId = existRole.id;
+          else if (existRole.roleName === 'OWNER') this.ownerId = existRole.id;
+        }
       }),
     );
     this.logger.log('Creating new roles');
