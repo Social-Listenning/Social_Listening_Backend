@@ -15,6 +15,7 @@ import { RolePermissionService } from 'src/modules/permission/services/rolePermi
 import * as bcrypt from 'bcrypt';
 import { UpdatePasswordDTO } from 'src/modules/auth/dtos/updatePassword.dto';
 import { UpdateAccountDTO } from 'src/modules/auth/dtos/updateAccount.dto';
+import { CreateEmployeeDTO } from '../dtos/createEmployee.dto';
 
 @Injectable()
 export class UserService {
@@ -197,6 +198,38 @@ export class UserService {
       ]);
     } catch (error) {
       console.log(error);
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
+  }
+
+  async createEmployee(data: CreateEmployeeDTO) {
+    const result = new ReturnResult<User>();
+    try {
+      const hashedPassword = await hashedPasword(data.password);
+
+      const userCreated: CreateUserInput = {
+        email: data.email,
+        userName: data.email,
+        fullName: data.email,
+        password: hashedPassword,
+        roleId: data.roleId,
+      };
+      const user = await this.prismaService.user.create({
+        data: {
+          ...userCreated,
+          isActive: true,
+        },
+      });
+      result.result = excludeData(user, [
+        'password',
+        'createdAt',
+        'updatedAt',
+        'roleId',
+        'deleteAt',
+        'refreshToken',
+      ]);
+    } catch (error) {
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
     return result;

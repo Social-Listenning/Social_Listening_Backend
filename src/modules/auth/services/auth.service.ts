@@ -1,3 +1,4 @@
+import { UserInGroupService } from './../../users/services/userInGroup.service';
 import { UpdateAccountDTO } from './../dtos/updateAccount.dto';
 import {
   BadRequestException,
@@ -32,6 +33,7 @@ export class AuthService {
     private readonly settingService: SettingService,
     private readonly emailQueueService: EmailQueueService,
     private readonly socialGroupService: SocialGroupService,
+    private readonly userInGroupService: UserInGroupService,
   ) {}
 
   async register(registerData: RegisterDTO) {
@@ -51,10 +53,11 @@ export class AuthService {
       const user = await this.userService.createUser(registerData);
       if (user.result) {
         await this.sendVerificationLink(user.result?.email);
-        await this.socialGroupService.createSocailGroup({
+        const group = await this.socialGroupService.createSocailGroup({
           name: user.result.email,
           managerId: user.result.id,
         });
+        await this.userInGroupService.addUserToGroup(user.result?.id, group.id);
       }
       result = user;
     } catch (error) {

@@ -2,7 +2,7 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { RequestWithUser } from '../interface/requestWithUser.interface';
 
@@ -12,7 +12,7 @@ export class EmailConfirmGuard implements CanActivate {
     const request: RequestWithUser = context.switchToHttp().getRequest();
 
     if (!request.user?.isActive) {
-      throw new UnauthorizedException('Confirm your email first');
+      throw new BadRequestException('Confirm your email first');
     }
 
     return true;
