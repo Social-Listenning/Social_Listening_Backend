@@ -234,4 +234,10 @@ export class UserService {
     }
     return result;
   }
+
+  async removeAccount(userId: string) {
+    return await this.prismaService.user.delete({
+      where: { id: userId },
+    });
+  }
 }

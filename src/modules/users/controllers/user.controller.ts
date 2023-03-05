@@ -1,6 +1,6 @@
 import { UserInGroupService } from './../services/userInGroup.service';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateEmployeeDTO } from '../dtos/createEmployee.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
@@ -42,6 +42,31 @@ export class UserController {
 
       await this.userInGroupService.addUserToGroup(employeeData.id, group.id);
       result = employee;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/remove/:id')
+  @UseGuards(EmailConfirmGuard)
+  @UseGuards(PermissionGuard(UserPerm.CreateUser.permission))
+  async removeEmployee(@Req() request: RequestWithUser, @Param() { id }) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+
+    try {
+      const userExist = await this.userService.getUserById(id);
+      if (!userExist) throw new Error(`User with id: ${id} is not exists`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (group.managerId === user.id)
+        throw new Error(`Can not remove yourself from group`);
+
+      await this.userInGroupService.removeUserFromGroup(userExist.id, group.id);
+      await this.userService.removeAccount(userExist.id);
+
+      result.result = true;
     } catch (error) {
       result.message = error.message;
     }

@@ -13,4 +13,15 @@ export class UserInGroupService {
       },
     });
   }
+
+  async removeUserFromGroup(userId: string, groupId: string) {
+    await this.prismaService.userInGroup.delete({
+      where: {
+        userId_groupId: {
+          userId: userId,
+          groupId: groupId,
+        },
+      },
+    });
+  }
 }
