@@ -10,7 +10,7 @@ import { excludeData } from 'src/utils/excludeData';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { User } from '../model/user.model';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
-import { excludeUser } from '../model/exclude.model';
+import { excludeUser, excludeUsers } from '../model/exclude.model';
 import { RolePermissionService } from 'src/modules/permission/services/rolePermission.service';
 import * as bcrypt from 'bcrypt';
 import { UpdatePasswordDTO } from 'src/modules/auth/dtos/updatePassword.dto';
@@ -238,6 +238,50 @@ export class UserService {
   async removeAccount(userId: string) {
     return await this.prismaService.user.delete({
       where: { id: userId },
+    });
+  }
+
+  async findUser(page) {
+    const listUser = await this.prismaService.user.findMany({
+      where: page.filter,
+      orderBy: page.orders,
+      include: {
+        role: true,
+      },
+      skip: (page.pageNumber - 1) * page.size,
+      take: page.size,
+    });
+
+    return listUser.map((user) => excludeData(user, excludeUsers));
+  }
+
+  async countUser() {
+    return await this.prismaService.user.count();
+  }
+
+  async findUserWithGroup(page) {
+    const listUser = await this.prismaService.user.findMany({
+      where: page.filter,
+      orderBy: page.orders,
+      include: {
+        role: true,
+        socialGroup: true,
+      },
+      skip: (page.pageNumber - 1) * page.size,
+      take: page.size,
+    });
+
+    return listUser.map((user) => {
+      return {
+        ...excludeData(user, excludeUsers),
+        socialGroup: undefined,
+      };
+    });
+  }
+
+  async countUserWithGroup(groupId: string) {
+    return await this.prismaService.user.count({
+      where: { socialGroup: { id: groupId } },
     });
   }
 }

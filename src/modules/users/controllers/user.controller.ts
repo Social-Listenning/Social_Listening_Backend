@@ -1,6 +1,16 @@
+import { PagedData } from './../../../common/models/paging/pagedData.dto';
 import { UserInGroupService } from './../services/userInGroup.service';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateEmployeeDTO } from '../dtos/createEmployee.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
@@ -9,6 +19,9 @@ import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 import { UserPerm } from '../enum/permission.enum';
 import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
 import { EmailConfirmGuard } from 'src/modules/auth/guards/emailConfirm.guard';
+import { UserPage } from '../dtos/userPage.dto';
+import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
+import { JWTAuthGuard } from 'src/modules/auth/guards/jwtAuth.guard';
 
 @Controller('user')
 export class UserController {
@@ -16,6 +29,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly groupService: SocialGroupService,
     private readonly userInGroupService: UserInGroupService,
+    private readonly advancedFilteringService: AdvancedFilteringService,
   ) {}
 
   @Post('/create')
@@ -50,7 +64,7 @@ export class UserController {
 
   @Post('/remove/:id')
   @UseGuards(EmailConfirmGuard)
-  @UseGuards(PermissionGuard(UserPerm.CreateUser.permission))
+  @UseGuards(PermissionGuard(UserPerm.RemoveUser.permission))
   async removeEmployee(@Req() request: RequestWithUser, @Param() { id }) {
     const user = request.user;
     const result = new ReturnResult<boolean>();
@@ -71,5 +85,53 @@ export class UserController {
       result.message = error.message;
     }
     return result;
+  }
+
+  @Get()
+  @UseGuards(PermissionGuard(UserPerm.GetAllUser.permission))
+  async getAllUsers(@Req() request: RequestWithUser, @Body() page: UserPage) {
+    const result = new PagedData<object>(page);
+
+    const data = this.advancedFilteringService.createFilter(page);
+    const listResult = await this.userService.findUser(data);
+
+    result.Data = listResult;
+    result.Page.totalElement = await this.userService.countUser();
+
+    return result;
+  }
+
+  @Get('/all')
+  @UseGuards(JWTAuthGuard)
+  async getAllUserWithGroup(
+    @Req() request: RequestWithUser,
+    @Body() page: UserPage,
+  ) {
+    const user = request.user;
+    const result = new PagedData<object>(page);
+
+    try {
+      if (user.role !== 'OWNER')
+        throw new Error(`You are not allowed to access this page`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+
+      const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND.push({
+        socialGroup: {
+          id: group.id,
+        },
+      });
+      const listResult = await this.userService.findUserWithGroup(data);
+
+      result.Data = listResult;
+      result.Page.totalElement = await this.userService.countUserWithGroup(
+        group.id,
+      );
+
+      return result;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }
