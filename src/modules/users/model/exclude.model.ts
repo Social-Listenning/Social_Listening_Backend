@@ -8,3 +8,10 @@ export const excludeUser: (keyof User)[] = [
   'deleteAt',
   'refreshToken',
 ];
+
+export const excludeUsers: (keyof User)[] = [
+  'password',
+  'roleId',
+  'deleteAt',
+  'refreshToken',
+];
