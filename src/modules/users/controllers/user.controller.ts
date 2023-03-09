@@ -89,7 +89,7 @@ export class UserController {
     return result;
   }
 
-  @Get()
+  @Post()
   @UseGuards(PermissionGuard(UserPerm.GetAllUser.permission))
   async getAllUsers(@Req() request: RequestWithUser, @Body() page: UserPage) {
     const result = new PagedData<object>(page);
@@ -103,7 +103,7 @@ export class UserController {
     return result;
   }
 
-  @Get('/all')
+  @Post('/all')
   @UseGuards(JWTAuthGuard)
   async getAllUserWithGroup(
     @Req() request: RequestWithUser,
