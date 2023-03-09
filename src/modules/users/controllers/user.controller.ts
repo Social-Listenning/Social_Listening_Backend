@@ -22,11 +22,13 @@ import { EmailConfirmGuard } from 'src/modules/auth/guards/emailConfirm.guard';
 import { UserPage } from '../dtos/userPage.dto';
 import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
 import { JWTAuthGuard } from 'src/modules/auth/guards/jwtAuth.guard';
+import { RoleService } from 'src/modules/roles/services/role.service';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
+    private readonly roleService: RoleService,
     private readonly groupService: SocialGroupService,
     private readonly userInGroupService: UserInGroupService,
     private readonly advancedFilteringService: AdvancedFilteringService,
@@ -87,7 +89,7 @@ export class UserController {
     return result;
   }
 
-  @Get()
+  @Post()
   @UseGuards(PermissionGuard(UserPerm.GetAllUser.permission))
   async getAllUsers(@Req() request: RequestWithUser, @Body() page: UserPage) {
     const result = new PagedData<object>(page);
@@ -101,7 +103,7 @@ export class UserController {
     return result;
   }
 
-  @Get('/all')
+  @Post('/all')
   @UseGuards(JWTAuthGuard)
   async getAllUserWithGroup(
     @Req() request: RequestWithUser,
@@ -133,5 +135,29 @@ export class UserController {
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+  }
+
+  @Post('/create/admin')
+  @UseGuards(PermissionGuard(UserPerm.CreateAdminAccount.permission))
+  async createAdminAccount(@Body() data: CreateEmployeeDTO) {
+    const result = new ReturnResult<User>();
+    try {
+      const role = await this.roleService.getRoleById(data.roleId);
+      if (role.roleName !== 'ADMIN')
+        throw new Error(`You cannot create account with role ${role.roleName}`);
+
+      const userExists = await this.userService.getUserByEmail(data.email);
+      if (userExists)
+        throw new Error(`You cannot create account with email ${data.email}`);
+
+      const userCreated = await this.userService.createEmployee(data);
+      console.log(userCreated);
+      if (userCreated.message !== null) throw new Error(userCreated.message);
+
+      result.result = userCreated.result;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
   }
 }
