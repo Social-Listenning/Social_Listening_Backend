@@ -1,4 +1,9 @@
 export const UserPerm = {
+  CreateAdminAccount: {
+    displayName: 'Create Admin Account',
+    permission: 'create-admin',
+    screen: 'Users',
+  },
   GetAllUser: {
     displayName: 'Get All Users',
     permission: 'table-user',
