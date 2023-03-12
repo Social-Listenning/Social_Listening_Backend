@@ -29,3 +29,16 @@ export function plainToClassCustom<T>(cls: ClassType<T>, plain: object): T {
   const dto = new InsensitiveDto(plain);
   return plainToClass(cls, dto);
 }
+
+export class Helper {
+  public static getFileName(fileName: string) {
+    const listAttr = fileName.split('.');
+    listAttr.pop();
+    return listAttr.join('.');
+  }
+
+  public static getFileExtension(fileName: string) {
+    const mimetype = fileName.split('.').pop();
+    return mimetype;
+  }
+}

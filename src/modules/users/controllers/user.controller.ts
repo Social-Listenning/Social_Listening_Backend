@@ -187,6 +187,11 @@ export class UserController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     const user = request.user;
+    if (user.role === 'ADMIN') {
+      const result = new ReturnResult<boolean>();
+      result.message = `You cannot allow to import file`;
+      return result;
+    }
 
     await this.userService.saveFile(file, user.id);
 
