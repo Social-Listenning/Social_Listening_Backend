@@ -188,6 +188,8 @@ export class UserController {
   ) {
     const user = request.user;
 
+    await this.userService.saveFile(file, user.id);
+
     return this.importUserQueueService.addFileToQueue({
       file: file,
       owner: user.id,

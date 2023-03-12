@@ -21,6 +21,8 @@ import { plainToClassCustom } from 'src/utils/hepler';
 import { ResultImportDTO } from 'src/common/models/import/importUser.dto';
 import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
 import { UserInGroupService } from './userInGroup.service';
+import { CreateFileDTO } from 'src/modules/files/dtos/createFile.dto';
+import { FileService } from 'src/modules/files/services/file.service';
 
 @Injectable()
 export class UserService {
@@ -28,6 +30,7 @@ export class UserService {
 
   constructor(
     private readonly roleService: RoleService,
+    private readonly fileService: FileService,
     private readonly prismaService: PrismaService,
     private readonly groupService: SocialGroupService,
     private readonly userGroupService: UserInGroupService,
@@ -290,6 +293,16 @@ export class UserService {
     return await this.prismaService.user.count({
       where: { socialGroup: { id: groupId } },
     });
+  }
+
+  async saveFile(file: Express.Multer.File, ownerId: string) {
+    const dataCreateFile: CreateFileDTO = {
+      fileName: file.filename,
+      path: file.path,
+      ownerId: ownerId,
+      minetype: file.mimetype,
+    };
+    await this.fileService.saveFile(dataCreateFile);
   }
 
   async importData(data: any[], ownerId: string) {
