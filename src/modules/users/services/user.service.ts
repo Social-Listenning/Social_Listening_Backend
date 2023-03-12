@@ -17,7 +17,7 @@ import { UpdatePasswordDTO } from 'src/modules/auth/dtos/updatePassword.dto';
 import { UpdateAccountDTO } from 'src/modules/auth/dtos/updateAccount.dto';
 import { CreateEmployeeDTO } from '../dtos/createEmployee.dto';
 import { ImportEmployeeDTO } from '../dtos/importEmployee.dto';
-import { plainToClassCustom } from 'src/utils/hepler';
+import { Helper, plainToClassCustom } from 'src/utils/hepler';
 import { ResultImportDTO } from 'src/common/models/import/importUser.dto';
 import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
 import { UserInGroupService } from './userInGroup.service';
@@ -297,7 +297,8 @@ export class UserService {
 
   async saveFile(file: Express.Multer.File, ownerId: string) {
     const dataCreateFile: CreateFileDTO = {
-      fileName: file.filename,
+      fileName: Helper.getFileName(file.filename),
+      fileExt: Helper.getFileExtension(file.filename),
       path: file.path,
       ownerId: ownerId,
       minetype: file.mimetype,

@@ -9,6 +9,7 @@ import { QueueModule } from './modules/queue/queue.module';
 import { PermissionModule } from './modules/permission/permission.module';
 import { TokenModule } from './modules/token/token.module';
 import { SocialGroupModule } from './modules/socialGroups/socialGroup.module';
+import { FileModule } from './modules/files/file.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SocialGroupModule } from './modules/socialGroups/socialGroup.module';
     QueueModule,
     TokenModule,
     SocialGroupModule,
+    FileModule,
   ],
   controllers: [],
   providers: [AppService],

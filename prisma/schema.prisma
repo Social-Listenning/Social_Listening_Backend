@@ -120,6 +120,7 @@ model UserInGroup {
 model File {
   id        String   @id @default(uuid())
   fileName  String
+  fileExt   String
   path      String
   owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
