@@ -5,11 +5,12 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
   Param,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { CreateEmployeeDTO } from '../dtos/createEmployee.dto';
@@ -23,6 +24,9 @@ import { UserPage } from '../dtos/userPage.dto';
 import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
 import { JWTAuthGuard } from 'src/modules/auth/guards/jwtAuth.guard';
 import { RoleService } from 'src/modules/roles/services/role.service';
+import { FilesInterceptor } from 'src/modules/files/interceptors/file.interceptor';
+import { v4 as uuidv4 } from 'uuid';
+import { ImportUserQueueService } from 'src/modules/queue/services/importUser.queue.service';
 
 @Controller('user')
 export class UserController {
@@ -31,6 +35,7 @@ export class UserController {
     private readonly roleService: RoleService,
     private readonly groupService: SocialGroupService,
     private readonly userInGroupService: UserInGroupService,
+    private readonly importUserQueueService: ImportUserQueueService,
     private readonly advancedFilteringService: AdvancedFilteringService,
   ) {}
 
@@ -151,7 +156,6 @@ export class UserController {
         throw new Error(`You cannot create account with email ${data.email}`);
 
       const userCreated = await this.userService.createEmployee(data);
-      console.log(userCreated);
       if (userCreated.message !== null) throw new Error(userCreated.message);
 
       result.result = userCreated.result;
@@ -159,5 +163,34 @@ export class UserController {
       result.message = error.message;
     }
     return result;
+  }
+
+  @Post('/import')
+  @UseGuards(PermissionGuard(UserPerm.ImportUser.permission))
+  @UseInterceptors(
+    FilesInterceptor({
+      fieldName: 'file',
+      path: '/user/import',
+      fileFilter: (request, file, callback) => {
+        callback(null, true);
+      },
+      fileName: function (req, file, cb) {
+        let uuid = uuidv4();
+        uuid = uuid.toString().replace('-');
+        const newFileName = `${uuid.substr(0, 10)}_${file.originalname}`;
+        cb(null, newFileName);
+      },
+    }),
+  )
+  async importUser(
+    @Req() request: RequestWithUser,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const user = request.user;
+
+    return this.importUserQueueService.addFileToQueue({
+      file: file,
+      owner: user.id,
+    });
   }
 }

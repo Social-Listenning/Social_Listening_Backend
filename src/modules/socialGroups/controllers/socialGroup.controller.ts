@@ -47,7 +47,6 @@ export class SocialGroupController {
       const group = await this.socialGroupService.getSocialGroupById(id);
       if (!group) throw new Error(`Not found social group`);
       else if (group.managerId !== user.id) {
-        console.log(group, user.id);
         throw new Error(`Something went wrong`);
       }
 

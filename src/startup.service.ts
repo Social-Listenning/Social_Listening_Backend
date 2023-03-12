@@ -71,6 +71,11 @@ export class AppService implements OnModuleInit {
         key: 'TOKEN_SECRET',
         value: '@N0tH3r_Pa55',
       },
+      {
+        group: 'FILE',
+        key: 'UPLOADED_FILE_DESTINATION',
+        value: './upload',
+      },
     ];
     this.listPermission = [
       ...ConvertObjectToArray(UserPerm).map((permission) =>

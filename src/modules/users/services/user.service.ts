@@ -16,14 +16,21 @@ import * as bcrypt from 'bcrypt';
 import { UpdatePasswordDTO } from 'src/modules/auth/dtos/updatePassword.dto';
 import { UpdateAccountDTO } from 'src/modules/auth/dtos/updateAccount.dto';
 import { CreateEmployeeDTO } from '../dtos/createEmployee.dto';
+import { ImportEmployeeDTO } from '../dtos/importEmployee.dto';
+import { plainToClassCustom } from 'src/utils/hepler';
+import { ResultImportDTO } from 'src/common/models/import/importUser.dto';
+import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
+import { UserInGroupService } from './userInGroup.service';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
 
   constructor(
-    private readonly prismaService: PrismaService,
     private readonly roleService: RoleService,
+    private readonly prismaService: PrismaService,
+    private readonly groupService: SocialGroupService,
+    private readonly userGroupService: UserInGroupService,
     private readonly rolePermissionService: RolePermissionService,
   ) {}
 
@@ -284,4 +291,65 @@ export class UserService {
       where: { socialGroup: { id: groupId } },
     });
   }
+
+  async importData(data: any[], ownerId: string) {
+    const result = new ReturnResult<ResultImportDTO>();
+    const importResult = new ResultImportDTO();
+
+    try {
+      const roleUser = await this.roleService.getRoleByRoleName('OWNER');
+      const group = await this.groupService.getSocialGroupByManagerId(ownerId);
+
+      importResult.totalImport = data.length;
+
+      for (let i = 0; i < data.length; i++) {
+        try {
+          const row = data[i];
+          const user = plainToClassCustom(ImportEmployeeDTO, row);
+
+          const isChecked = this.checkData(user);
+          if (!isChecked) throw Error();
+
+          const _ = await this.roleService.getRoleByRoleName(user.roleName);
+          if (_.level >= roleUser.level) throw Error();
+
+          const createEmployeeInput: CreateEmployeeDTO = {
+            ...user,
+            roleId: _.id,
+          };
+
+          const userCreated = await this.createEmployee(createEmployeeInput);
+          if (userCreated.result === null) throw Error();
+
+          const newUser = userCreated.result;
+          await this.userGroupService.addUserToGroup(newUser.id, group.id);
+
+          importResult.importSuccess += 1;
+        } catch (error) {
+          importResult.importFailure += 1;
+        }
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+
+    result.result = importResult;
+    console.log(result.result);
+  }
+
+  private checkData(data: ImportEmployeeDTO) {
+    const email = data.email;
+    const password = data.password;
+
+    const checkEmail = this.validateEmail(email);
+    const checkPassword = password.length >= 8 && password.length <= 50;
+
+    return checkEmail && checkPassword;
+  }
+
+  private validateEmail = (email: string) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+    );
+  };
 }
