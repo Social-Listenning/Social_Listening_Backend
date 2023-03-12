@@ -41,6 +41,7 @@ model User {
   socialGroup  SocialGroup?
   SocialTab    SocialTab[]
   UserInGroup  UserInGroup[]
+  File         File[]
 
   @@index([email])
   @@index([refreshToken])
@@ -114,4 +115,14 @@ model UserInGroup {
   groupId String
 
   @@id([userId, groupId])
+}
+
+model File {
+  id        String   @id @default(uuid())
+  fileName  String
+  path      String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  minetype  String
+  createdAt DateTime @default(now())
 }
