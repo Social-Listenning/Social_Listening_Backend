@@ -185,8 +185,10 @@ export class UserController {
   async importUser(
     @Req() request: RequestWithUser,
     @UploadedFile() file: Express.Multer.File,
+    @Body() { mappingColumn },
   ) {
     const user = request.user;
+
     if (user.role === 'ADMIN') {
       const result = new ReturnResult<boolean>();
       result.message = `You cannot allow to import file`;
@@ -198,6 +200,7 @@ export class UserController {
     return this.importUserQueueService.addFileToQueue({
       file: file,
       owner: user.id,
+      columnMapping: mappingColumn,
     });
   }
 }

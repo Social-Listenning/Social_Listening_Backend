@@ -309,20 +309,21 @@ export class UserService {
     await this.fileService.saveFile(dataCreateFile);
   }
 
-  async importData(data: any[], ownerId: string) {
+  async importData(data: any[], ownerId: string, columnMapping: string) {
     const result = new ReturnResult<ResultImportDTO>();
     const importResult = new ResultImportDTO();
 
     try {
       const roleUser = await this.roleService.getRoleByRoleName('OWNER');
       const group = await this.groupService.getSocialGroupByManagerId(ownerId);
+      const mapping = JSON.parse(columnMapping);
 
       importResult.totalImport = data.length;
 
       for (let i = 0; i < data.length; i++) {
         try {
           const row = data[i];
-          const user = plainToClassCustom(ImportEmployeeDTO, row);
+          const user = plainToClassCustom(ImportEmployeeDTO, row, mapping);
 
           const isChecked = this.checkData(user);
           if (!isChecked) throw Error();
