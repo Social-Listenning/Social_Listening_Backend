@@ -124,11 +124,17 @@ export class UserController {
       const group = await this.groupService.getSocialGroupByManagerId(user.id);
 
       const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND = data.filter.AND.map((query) => {
+        return {
+          user: query,
+        };
+      });
       data.filter.AND.push({
-        socialGroup: {
+        group: {
           id: group.id,
         },
       });
+
       const listResult = await this.userService.findUserWithGroup(data);
 
       result.data = listResult;

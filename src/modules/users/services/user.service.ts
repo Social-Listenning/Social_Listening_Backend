@@ -1,3 +1,4 @@
+import { SocialGroup } from './../../socialGroups/models/socialGroup.model';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { CreateUserDTO } from '../dtos/createUser.dto';
@@ -270,22 +271,22 @@ export class UserService {
   }
 
   async findUserWithGroup(page) {
-    const listUser = await this.prismaService.user.findMany({
+    const listUser = await this.prismaService.userInGroup.findMany({
       where: page.filter,
       orderBy: page.orders,
       include: {
-        role: true,
-        socialGroup: true,
+        user: {
+          include: {
+            role: true,
+          },
+        },
       },
       skip: (page.pageNumber - 1) * page.size,
       take: page.size,
     });
 
     return listUser.map((user) => {
-      return {
-        ...excludeData(user, excludeUsers),
-        socialGroup: undefined,
-      };
+      return excludeData(user.user, excludeUsers);
     });
   }
 
