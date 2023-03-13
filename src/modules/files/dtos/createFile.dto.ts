@@ -3,5 +3,6 @@ export class CreateFileDTO {
   fileExt: string;
   path: string;
   ownerId: string;
+  groupId: string;
   minetype: string;
 }

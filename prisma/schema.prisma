@@ -96,6 +96,7 @@ model SocialGroup {
   extendData  String?
   SocialTab   SocialTab[]
   UserInGroup UserInGroup[]
+  File        File[]
 }
 
 model SocialTab {
@@ -118,12 +119,14 @@ model UserInGroup {
 }
 
 model File {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   fileName  String
   fileExt   String
   path      String
-  owner     User     @relation(fields: [ownerId], references: [id])
+  owner     User        @relation(fields: [ownerId], references: [id])
   ownerId   String
+  group     SocialGroup @relation(fields: [groupId], references: [id])
+  groupId   String
   minetype  String
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
 }

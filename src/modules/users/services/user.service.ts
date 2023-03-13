@@ -1,3 +1,4 @@
+import { SocialGroup } from './../../socialGroups/models/socialGroup.model';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { CreateUserDTO } from '../dtos/createUser.dto';
@@ -270,22 +271,22 @@ export class UserService {
   }
 
   async findUserWithGroup(page) {
-    const listUser = await this.prismaService.user.findMany({
+    const listUser = await this.prismaService.userInGroup.findMany({
       where: page.filter,
       orderBy: page.orders,
       include: {
-        role: true,
-        socialGroup: true,
+        user: {
+          include: {
+            role: true,
+          },
+        },
       },
       skip: (page.pageNumber - 1) * page.size,
       take: page.size,
     });
 
     return listUser.map((user) => {
-      return {
-        ...excludeData(user, excludeUsers),
-        socialGroup: undefined,
-      };
+      return excludeData(user.user, excludeUsers);
     });
   }
 
@@ -296,30 +297,34 @@ export class UserService {
   }
 
   async saveFile(file: Express.Multer.File, ownerId: string) {
+    const group = await this.userGroupService.getGroupById(ownerId);
+
     const dataCreateFile: CreateFileDTO = {
       fileName: Helper.getFileName(file.filename),
       fileExt: Helper.getFileExtension(file.filename),
       path: file.path,
       ownerId: ownerId,
+      groupId: group?.id,
       minetype: file.mimetype,
     };
     await this.fileService.saveFile(dataCreateFile);
   }
 
-  async importData(data: any[], ownerId: string) {
+  async importData(data: any[], ownerId: string, columnMapping: string) {
     const result = new ReturnResult<ResultImportDTO>();
     const importResult = new ResultImportDTO();
 
     try {
       const roleUser = await this.roleService.getRoleByRoleName('OWNER');
       const group = await this.groupService.getSocialGroupByManagerId(ownerId);
+      const mapping = JSON.parse(columnMapping);
 
       importResult.totalImport = data.length;
 
       for (let i = 0; i < data.length; i++) {
         try {
           const row = data[i];
-          const user = plainToClassCustom(ImportEmployeeDTO, row);
+          const user = plainToClassCustom(ImportEmployeeDTO, row, mapping);
 
           const isChecked = this.checkData(user);
           if (!isChecked) throw Error();

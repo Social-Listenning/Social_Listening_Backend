@@ -102,8 +102,8 @@ export class UserController {
     const data = this.advancedFilteringService.createFilter(page);
     const listResult = await this.userService.findUser(data);
 
-    result.Data = listResult;
-    result.Page.totalElement = await this.userService.countUser();
+    result.data = listResult;
+    result.page.totalElement = await this.userService.countUser();
 
     return result;
   }
@@ -124,15 +124,21 @@ export class UserController {
       const group = await this.groupService.getSocialGroupByManagerId(user.id);
 
       const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND = data.filter.AND.map((query) => {
+        return {
+          user: query,
+        };
+      });
       data.filter.AND.push({
-        socialGroup: {
+        group: {
           id: group.id,
         },
       });
+
       const listResult = await this.userService.findUserWithGroup(data);
 
-      result.Data = listResult;
-      result.Page.totalElement = await this.userService.countUserWithGroup(
+      result.data = listResult;
+      result.page.totalElement = await this.userService.countUserWithGroup(
         group.id,
       );
 
@@ -185,8 +191,10 @@ export class UserController {
   async importUser(
     @Req() request: RequestWithUser,
     @UploadedFile() file: Express.Multer.File,
+    @Body() { mappingColumn },
   ) {
     const user = request.user;
+
     if (user.role === 'ADMIN') {
       const result = new ReturnResult<boolean>();
       result.message = `You cannot allow to import file`;
@@ -198,6 +206,7 @@ export class UserController {
     return this.importUserQueueService.addFileToQueue({
       file: file,
       owner: user.id,
+      columnMapping: mappingColumn,
     });
   }
 }

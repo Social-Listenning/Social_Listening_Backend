@@ -1,17 +1,17 @@
 import { plainToClass, Transform } from 'class-transformer';
 import { ClassType } from 'class-transformer-validator';
 
-export function plainToClassCustom<T>(cls: ClassType<T>, plain: object): T {
+export function plainToClassCustom<T>(
+  cls: ClassType<T>,
+  plain: object,
+  mapping: any[],
+): T {
   class InsensitiveDto {
     [key: string]: any;
 
     constructor(input: object) {
-      const exampleData = new cls();
-      const listKey = Object.getOwnPropertyNames(exampleData);
       Object.entries(input).forEach(([k, v]) => {
-        const propertyKey = listKey.find(
-          (key) => key.toLowerCase() === k.toLowerCase(),
-        );
+        const propertyKey = mapping.find((key) => key.header === k)?.props;
         if (propertyKey) {
           this[propertyKey] = v;
         }

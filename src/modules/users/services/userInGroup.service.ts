@@ -6,7 +6,7 @@ export class UserInGroupService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async addUserToGroup(userId: string, groupId: string) {
-    return this.prismaService.userInGroup.create({
+    return await this.prismaService.userInGroup.create({
       data: {
         user: { connect: { id: userId } },
         group: { connect: { id: groupId } },
@@ -23,5 +23,14 @@ export class UserInGroupService {
         },
       },
     });
+  }
+
+  async getGroupById(userId: string) {
+    const data = await this.prismaService.userInGroup.findFirst({
+      where: { userId: userId },
+      include: { group: true },
+    });
+
+    return data !== null ? data.group : null;
   }
 }

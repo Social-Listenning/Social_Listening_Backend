@@ -1,8 +1,10 @@
+import { SocialGroupService } from './../../socialGroups/services/socialGroup.service';
 import {
   BadRequestException,
   Body,
   Controller,
   Get,
+  Inject,
   NotFoundException,
   Param,
   Post,
@@ -10,6 +12,7 @@ import {
   Res,
   StreamableFile,
   UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { PagedData } from 'src/common/models/paging/pagedData.dto';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
@@ -24,6 +27,8 @@ import { Response } from 'express';
 @Controller('file')
 export class FileController {
   constructor(
+    @Inject(forwardRef(() => SocialGroupService))
+    private readonly groupService: SocialGroupService,
     private readonly fileService: FileService,
     private readonly advancedFilteringService: AdvancedFilteringService,
   ) {}
@@ -41,15 +46,15 @@ export class FileController {
       if (user.role !== 'OWNER')
         throw new Error(`You are not allowed to access this page`);
 
-      const group = user.id;
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
 
       const data = this.advancedFilteringService.createFilter(page);
-      data.filter.AND.push({ ownerId: group });
+      data.filter.AND.push({ groupId: group.id });
 
       const listResult = await this.fileService.findFileWithGroup(data);
 
-      result.Data = listResult;
-      result.Page.totalElement = await this.fileService.countFileWithGroup(
+      result.data = listResult;
+      result.page.totalElement = await this.fileService.countFileWithGroup(
         group,
       );
     } catch (error) {}

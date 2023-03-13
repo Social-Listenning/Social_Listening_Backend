@@ -42,12 +42,13 @@ export class ImportUserWorker {
     job: Job<{
       file: Express.Multer.File;
       owner: string;
+      columnMapping: string;
     }>,
   ): Promise<boolean> {
-    const { file, owner } = job.data;
+    const { file, owner, columnMapping } = job.data;
 
     const dataFromExcel = this.readExcelFile(file.path);
-    await this.userService.importData(dataFromExcel, owner);
+    await this.userService.importData(dataFromExcel, owner, columnMapping);
 
     return true;
   }
