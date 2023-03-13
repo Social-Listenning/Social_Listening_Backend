@@ -102,8 +102,8 @@ export class UserController {
     const data = this.advancedFilteringService.createFilter(page);
     const listResult = await this.userService.findUser(data);
 
-    result.Data = listResult;
-    result.Page.totalElement = await this.userService.countUser();
+    result.data = listResult;
+    result.page.totalElement = await this.userService.countUser();
 
     return result;
   }
@@ -131,8 +131,8 @@ export class UserController {
       });
       const listResult = await this.userService.findUserWithGroup(data);
 
-      result.Data = listResult;
-      result.Page.totalElement = await this.userService.countUserWithGroup(
+      result.data = listResult;
+      result.page.totalElement = await this.userService.countUserWithGroup(
         group.id,
       );
 

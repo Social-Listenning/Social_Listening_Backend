@@ -2,9 +2,9 @@ import { Page } from './page.dto';
 
 export class PagedData<T> {
   constructor(page: Page) {
-    this.Page = page;
+    this.page = page;
   }
 
-  public Data: T[];
-  public Page: Page;
+  public data: T[];
+  public page: Page;
 }

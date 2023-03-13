@@ -3,6 +3,7 @@ import { PrismaService } from 'src/config/database/database.config.service';
 import { CreateFileDTO } from '../dtos/createFile.dto';
 import { excludeData } from 'src/utils/excludeData';
 import { excludeFile } from '../models/exclude.model';
+import { excludeUser } from 'src/modules/users/model/exclude.model';
 
 @Injectable()
 export class FileService {
@@ -23,11 +24,23 @@ export class FileService {
     const listFile = await this.prismaService.file.findMany({
       where: page.filter,
       orderBy: page.orders,
+      include: {
+        owner: {
+          include: {
+            role: true,
+          },
+        },
+      },
       skip: (page.pageNumber - 1) * page.size,
       take: page.size,
     });
 
-    return listFile.map((file) => excludeData(file, excludeFile));
+    return listFile.map((file) => {
+      return {
+        ...excludeData(file, excludeFile),
+        owner: excludeData(file.owner, excludeUser),
+      };
+    });
   }
 
   async countFileWithGroup(ownerId: string) {

@@ -296,11 +296,14 @@ export class UserService {
   }
 
   async saveFile(file: Express.Multer.File, ownerId: string) {
+    const group = await this.userGroupService.getGroupById(ownerId);
+
     const dataCreateFile: CreateFileDTO = {
       fileName: Helper.getFileName(file.filename),
       fileExt: Helper.getFileExtension(file.filename),
       path: file.path,
       ownerId: ownerId,
+      groupId: group?.id,
       minetype: file.mimetype,
     };
     await this.fileService.saveFile(dataCreateFile);
