@@ -1,10 +1,4 @@
-import {
-  Processor,
-  OnQueueActive,
-  OnQueueCompleted,
-  OnQueueFailed,
-  Process,
-} from '@nestjs/bull';
+import { Processor, OnQueueActive, OnQueueFailed, Process } from '@nestjs/bull';
 import { Logger, forwardRef, Inject } from '@nestjs/common';
 import { Job } from 'bull';
 import { UserService } from 'src/modules/users/services/user.service';
@@ -22,12 +16,6 @@ export class ImportUserWorker {
   @OnQueueActive()
   onActive(job: Job) {
     this.logger.log(`Processing job ${job.id} of type ${job.name}`);
-  }
-
-  @OnQueueCompleted()
-  onCompleted(job: Job, result: any) {
-    this.logger.log(`Completed job ${job.id} of type ${job.name}`);
-    this.logger.log(`Result: ${JSON.stringify(result)}`);
   }
 
   @OnQueueFailed()

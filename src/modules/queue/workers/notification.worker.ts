@@ -1,10 +1,4 @@
-import {
-  Processor,
-  OnQueueActive,
-  OnQueueCompleted,
-  OnQueueFailed,
-  Process,
-} from '@nestjs/bull';
+import { Processor, OnQueueActive, OnQueueFailed, Process } from '@nestjs/bull';
 import { Logger, forwardRef, Inject } from '@nestjs/common';
 import { Job } from 'bull';
 import { NotificationModel } from 'src/modules/notifications/model/notification.model';
