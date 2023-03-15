@@ -12,7 +12,7 @@ export class ImportUserQueueService {
   async addFileToQueue(data: any) {
     const result = new ReturnResult<boolean>();
     try {
-      await this.importUserQueue.add(data);
+      await this.importUserQueue.add('importUser', data);
       result.result = true;
     } catch (error) {
       result.message = error.message;

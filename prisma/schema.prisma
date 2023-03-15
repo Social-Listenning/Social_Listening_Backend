@@ -25,23 +25,24 @@ model Role {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
+  id           String         @id @default(uuid())
+  email        String         @unique
   userName     String
   fullName     String
   phoneNumber  String?
   refreshToken String?
   password     String
-  role         Role          @relation(fields: [roleId], references: [id])
+  role         Role           @relation(fields: [roleId], references: [id])
   roleId       String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  deleteAt     Boolean       @default(false)
-  isActive     Boolean       @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deleteAt     Boolean        @default(false)
+  isActive     Boolean        @default(false)
   socialGroup  SocialGroup?
   SocialTab    SocialTab[]
   UserInGroup  UserInGroup[]
   File         File[]
+  Notification Notification[]
 
   @@index([email])
   @@index([refreshToken])
@@ -129,4 +130,26 @@ model File {
   groupId   String
   minetype  String
   createdAt DateTime    @default(now())
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  title      String?
+  body       String?
+  maxAttempt Int      @default(5)
+  duration   Int      @default(5000)
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  type       String
+  status     String   @default("Sent")
+  isClick    Boolean  @default(false)
+  refType    String?
+  refId      String?
+  extendData String?
+  createdAt  DateTime @default(now())
+}
+
+model SocketConnection {
+  userId      String @id
+  socketToken String
 }

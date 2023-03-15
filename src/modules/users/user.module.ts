@@ -1,5 +1,5 @@
 import { SocialGroupModule } from './../socialGroups/socialGroup.module';
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { PrismaModule } from 'src/config/database/database.config.module';
 import { RoleModule } from '../roles/role.module';
@@ -9,6 +9,7 @@ import { UserController } from './controllers/user.controller';
 import { FileModule } from '../files/file.module';
 import { SettingModule } from '../setting/setting.module';
 import { QueueModule } from '../queue/queue.module';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { QueueModule } from '../queue/queue.module';
     SocialGroupModule,
     SettingModule,
     FileModule,
-    QueueModule,
+    NotificationModule,
+    forwardRef(() => QueueModule),
   ],
   controllers: [UserController],
   providers: [UserService, UserInGroupService],

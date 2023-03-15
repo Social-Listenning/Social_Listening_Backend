@@ -7,6 +7,6 @@ export class EmailQueueService {
   constructor(@InjectQueue('email') private readonly emailQueue: Queue) {}
 
   async addEmailToQueue(data: any) {
-    await this.emailQueue.add(data);
+    await this.emailQueue.add('sendEmail', data);
   }
 }

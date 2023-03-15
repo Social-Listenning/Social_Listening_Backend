@@ -1,4 +1,3 @@
-import { SocialGroup } from './../../socialGroups/models/socialGroup.model';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { CreateUserDTO } from '../dtos/createUser.dto';
@@ -24,6 +23,7 @@ import { SocialGroupService } from 'src/modules/socialGroups/services/socialGrou
 import { UserInGroupService } from './userInGroup.service';
 import { CreateFileDTO } from 'src/modules/files/dtos/createFile.dto';
 import { FileService } from 'src/modules/files/services/file.service';
+import { NotificationService } from 'src/modules/notifications/services/notification.service';
 
 @Injectable()
 export class UserService {
@@ -35,6 +35,7 @@ export class UserService {
     private readonly prismaService: PrismaService,
     private readonly groupService: SocialGroupService,
     private readonly userGroupService: UserInGroupService,
+    private readonly notificationService: NotificationService,
     private readonly rolePermissionService: RolePermissionService,
   ) {}
 
@@ -353,6 +354,15 @@ export class UserService {
     }
 
     result.result = importResult;
+    await this.notificationService.createNotification(
+      {
+        title: 'Import Account Successfully',
+        body: 'Click to view import result',
+        type: 'External Success',
+        extendData: JSON.stringify(result.result),
+      },
+      ownerId,
+    );
     console.log(result.result);
   }
 

@@ -37,7 +37,7 @@ export class ImportUserWorker {
     );
   }
 
-  @Process()
+  @Process('importUser')
   async importUser(
     job: Job<{
       file: Express.Multer.File;

@@ -4,8 +4,10 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
   Logger,
+  forwardRef,
 } from '@nestjs/common';
 import { UserService } from 'src/modules/users/services/user.service';
 import { RegisterDTO } from '../dtos/register.dto';
@@ -28,6 +30,7 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   constructor(
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     private readonly settingService: SettingService,
@@ -224,6 +227,23 @@ export class AuthService {
 
   async resetPassword(userId: string, password: string) {
     return await this.userService.resetPassword(userId, password);
+  }
+
+  async getUserFromAuthToken(token: string) {
+    try {
+      const tokenSecretSetting =
+        await this.settingService.getSettingByKeyAndGroup(
+          'TOKEN_SECRET',
+          'ACTIVATE_ACCOUNT',
+        );
+      const payload = await this.jwtService.verify(token, {
+        secret: tokenSecretSetting.value,
+      });
+
+      if (payload.id) return payload.id;
+    } catch (error) {
+      return null;
+    }
   }
 
   private async sendRecoveyPasswordLink(user: User) {

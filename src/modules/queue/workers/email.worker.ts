@@ -41,7 +41,7 @@ export class EmailWorker {
     }
   }
 
-  @Process()
+  @Process('sendEmail')
   async sendEmail(
     job: Job<{
       to: string;
