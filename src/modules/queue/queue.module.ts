@@ -6,6 +6,10 @@ import { MailModule } from '../mail/mail.module';
 import { ImportUserQueueService } from './services/importUser.queue.service';
 import { ImportUserWorker } from './workers/importUser.worker';
 import { UserModule } from '../users/user.module';
+import { NotificationModule } from '../notifications/notification.module';
+import { NotificationWorker } from './workers/notification.worker';
+import { NotificationQueueService } from './services/notification.queue.service';
+import { SocketModule } from '../sockets/socket.module';
 
 @Module({
   imports: [
@@ -22,16 +26,27 @@ import { UserModule } from '../users/user.module';
       {
         name: 'importUser',
       },
+      {
+        name: 'notification',
+      },
     ),
     MailModule,
     forwardRef(() => UserModule),
+    forwardRef(() => SocketModule),
+    forwardRef(() => NotificationModule),
   ],
   providers: [
     EmailQueueService,
     EmailWorker,
     ImportUserQueueService,
     ImportUserWorker,
+    NotificationQueueService,
+    NotificationWorker,
   ],
-  exports: [EmailQueueService, ImportUserQueueService],
+  exports: [
+    EmailQueueService,
+    ImportUserQueueService,
+    NotificationQueueService,
+  ],
 })
 export class QueueModule {}

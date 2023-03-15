@@ -10,6 +10,7 @@ import { PermissionModule } from './modules/permission/permission.module';
 import { TokenModule } from './modules/token/token.module';
 import { SocialGroupModule } from './modules/socialGroups/socialGroup.module';
 import { FileModule } from './modules/files/file.module';
+import { NotificationModule } from './modules/notifications/notification.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { FileModule } from './modules/files/file.module';
     TokenModule,
     SocialGroupModule,
     FileModule,
+    NotificationModule,
   ],
   controllers: [],
   providers: [AppService],
