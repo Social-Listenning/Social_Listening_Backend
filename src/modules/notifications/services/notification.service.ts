@@ -77,6 +77,23 @@ export class NotificationService {
     });
   }
 
+  async getNotificationByUserId(page: any) {
+    const listNotification = await this.prismaService.notification.findMany({
+      where: page.filter,
+      orderBy: page.orders,
+      skip: (page.pageNumber - 1) * page.size + page.offset,
+      take: page.size,
+    });
+
+    return listNotification;
+  }
+
+  async countNotification(userId: string) {
+    return await this.prismaService.notification.count({
+      where: { userId: userId },
+    });
+  }
+
   private async sendNotification(notification) {
     return this.notificationQueue.addNotificationToQueue(notification);
   }

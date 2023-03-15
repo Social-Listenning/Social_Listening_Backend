@@ -2,7 +2,6 @@ import { PagedData } from './../../../common/models/paging/pagedData.dto';
 import { UserInGroupService } from './../services/userInGroup.service';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
 import {
-  BadRequestException,
   Body,
   Controller,
   Param,
@@ -27,6 +26,7 @@ import { RoleService } from 'src/modules/roles/services/role.service';
 import { FilesInterceptor } from 'src/modules/files/interceptors/file.interceptor';
 import { v4 as uuidv4 } from 'uuid';
 import { ImportUserQueueService } from 'src/modules/queue/services/importUser.queue.service';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 
 @Controller('user')
 export class UserController {
@@ -97,14 +97,19 @@ export class UserController {
   @Post()
   @UseGuards(PermissionGuard(UserPerm.GetAllUser.permission))
   async getAllUsers(@Req() request: RequestWithUser, @Body() page: UserPage) {
-    const result = new PagedData<object>(page);
+    const result = new ReturnResult<PagedData<object>>();
+    const pagedData = new PagedData<object>(page);
+    try {
+      const data = this.advancedFilteringService.createFilter(page);
+      const listResult = await this.userService.findUser(data);
 
-    const data = this.advancedFilteringService.createFilter(page);
-    const listResult = await this.userService.findUser(data);
+      pagedData.data = listResult;
+      pagedData.page.totalElement = await this.userService.countUser();
 
-    result.data = listResult;
-    result.page.totalElement = await this.userService.countUser();
-
+      result.result = pagedData;
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
     return result;
   }
 
@@ -115,7 +120,8 @@ export class UserController {
     @Body() page: UserPage,
   ) {
     const user = request.user;
-    const result = new PagedData<object>(page);
+    const result = new ReturnResult<PagedData<object>>();
+    const pagedData = new PagedData<object>(page);
 
     try {
       if (user.role !== 'OWNER')
@@ -137,15 +143,17 @@ export class UserController {
 
       const listResult = await this.userService.findUserWithGroup(data);
 
-      result.data = listResult;
-      result.page.totalElement = await this.userService.countUserWithGroup(
+      pagedData.data = listResult;
+      pagedData.page.totalElement = await this.userService.countUserWithGroup(
         group.id,
       );
-
-      return result;
+      result.result = pagedData;
     } catch (error) {
-      throw new BadRequestException(error.message);
+      if (error.message === `You are not allowed to access this page`)
+        result.message = error.message;
+      else result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
+    return result;
   }
 
   @Post('/create/admin')
