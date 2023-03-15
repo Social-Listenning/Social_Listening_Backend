@@ -56,6 +56,27 @@ export class NotificationService {
     this.server.sockets.to(socketToken).emit('sendNotification', notification);
   }
 
+  async isReceived(notificationId: number) {
+    const notification = await this.prismaService.notification.findFirst({
+      where: { id: notificationId },
+    });
+    return notification?.status;
+  }
+
+  async receiveNotification(notificationId: number) {
+    await this.prismaService.notification.update({
+      where: { id: notificationId },
+      data: { status: 'Received' },
+    });
+  }
+
+  async clickNotification(notificationId: number) {
+    await this.prismaService.notification.update({
+      where: { id: notificationId },
+      data: { isClick: true },
+    });
+  }
+
   private async sendNotification(notification) {
     return this.notificationQueue.addNotificationToQueue(notification);
   }

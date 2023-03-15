@@ -1,7 +1,9 @@
 import { Logger } from '@nestjs/common';
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -45,13 +47,19 @@ export class NotificationGateway
     this.logger.log(`User with id: ${userId} disconnect Socket`);
   }
 
-  // @SubscribeMessage('receiveNotification')
-  // async receiveNotification(@MessageBody() notificationId: string) {
-  //   this.notificationService.receiveNotification(notificationId);
-  // }
+  @SubscribeMessage('receiveNotification')
+  async receiveNotification(@MessageBody() notificationId: string) {
+    if (!isNaN(Number(notificationId))) {
+      const id = Number.parseInt(notificationId);
+      this.notificationService.receiveNotification(id);
+    }
+  }
 
-  // @SubscribeMessage('clickNotification')
-  // async clickNotification(@MessageBody() notificationId: string) {
-  //   this.notificationService.clickNotification(notificationId);
-  // }
+  @SubscribeMessage('clickNotification')
+  async clickNotification(@MessageBody() notificationId: string) {
+    if (!isNaN(Number(notificationId))) {
+      const id = Number.parseInt(notificationId);
+      this.notificationService.clickNotification(id);
+    }
+  }
 }
