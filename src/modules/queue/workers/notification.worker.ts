@@ -39,22 +39,22 @@ export class NotificationWorker {
     const userId = notification.userId;
 
     const socketToken = await this.socketService.getConnection(userId);
+    const received = await this.notificationService.isReceived(notification.id);
 
-    if (socketToken) {
+    if (socketToken && received !== null && received === 'Sent')
       await this.notificationService.pushNotification(
         notification,
         socketToken,
       );
-    } else {
-      notification.maxAttempt -= 1;
-      this.logger.log(`Retrying send notification with id: ${notification.id}`);
-      if (notification.maxAttempt > 0)
-        this.notificationQueue.addNotificationToQueue(notification);
-      else
-        this.logger.log(
-          `Max retries reached for sending notification with id ${notification.id}`,
-        );
-    }
+
+    notification.maxAttempt -= 1;
+    if (notification.maxAttempt > 0) {
+      if (received === 'Sent')
+        this.notificationQueue.addNotificationToQueue(notification, 5);
+    } else
+      this.logger.log(
+        `Max retries reached for sending notification with id ${notification.id}`,
+      );
 
     return true;
   }
