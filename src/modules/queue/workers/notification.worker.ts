@@ -30,25 +30,11 @@ export class NotificationWorker {
     this.logger.log(`Processing job ${job.id} of type ${job.name}`);
   }
 
-  @OnQueueCompleted()
-  onCompleted(job: Job, result: any) {
-    // this.logger.log(`Completed job ${job.id} of type ${job.name}`);
-    // this.logger.log(`Result: ${JSON.stringify(result)}`);
-  }
-
   @OnQueueFailed()
   async onFailed(job: Job, error: any) {
     this.logger.error(
       `Failed job ${job.id} of type ${job.name}: ${error.message}`,
     );
-
-    // const { to, subject, body, retryCount } = job.data;
-    // if (retryCount < 3) {
-    //   this.logger.log(`Retrying send notification to ${to}`);
-    //   await this.mailService.sendEmail(to, subject, body, retryCount + 1);
-    // } else {
-    //   this.logger.log(`Max retries reached for sending notification to ${to}`);
-    // }
   }
 
   @Process('pushNotification')
