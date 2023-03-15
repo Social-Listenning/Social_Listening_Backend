@@ -6,6 +6,7 @@ import { NotificationService } from './services/notification.service';
 import { SocketModule } from '../sockets/socket.module';
 import { QueueModule } from '../queue/queue.module';
 import { PrismaModule } from 'src/config/database/database.config.module';
+import { NotificationController } from './controllers/notification.controller';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { PrismaModule } from 'src/config/database/database.config.module';
     forwardRef(() => QueueModule),
     forwardRef(() => AuthModule),
   ],
-  controllers: [],
+  controllers: [NotificationController],
   providers: [NotificationGateway, NotificationService],
   exports: [NotificationService],
 })
