@@ -7,6 +7,7 @@ import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.
 import { PagedData } from 'src/common/models/paging/pagedData.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
+import { SortOrderType } from 'src/common/enum/sortOrderType.enum';
 
 @Controller('notification')
 export class NotificationController {
@@ -32,7 +33,7 @@ export class NotificationController {
 
       const data = this.advancedFilteringService.createFilter(page);
       data.filter.AND.push({ userId: userId });
-      data.orders = { createdAt: 'desc' };
+      data.orders.push({ createdAt: SortOrderType.DESC });
 
       const listNotification =
         await this.notificationService.getNotificationByUserId(data);
