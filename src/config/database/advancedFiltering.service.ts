@@ -6,10 +6,10 @@ type NestedObject = Record<string, unknown> | object;
 export class AdvancedFilteringService {
   createFilter(page: Page) {
     const where = { AND: [] };
-    const orderBy = {};
+    const orderBy = [];
 
     page.orders.forEach((_sort) => {
-      orderBy[_sort.props] = _sort.sortDir;
+      orderBy.push({ [_sort.props]: _sort.sortDir });
     });
 
     page.filter.forEach((_filter) => {
@@ -49,6 +49,30 @@ export class AdvancedFilteringService {
         return { isEmpty: true };
       case 'Is Not Empty':
         return { isEmpty: false };
+      case 'Start With':
+        return { startWith: filterValue };
+      case 'End With':
+        return { endWith: filterValue };
+      case 'Is Greater Than Or Equal To':
+        return { gte: parseInt(filterValue) };
+      case 'Is Greater Than':
+        return { gt: parseInt(filterValue) };
+      case 'Is Less Than Or Equal To':
+        return { lte: parseInt(filterValue) };
+      case 'Is Less Than':
+        return { lt: parseInt(filterValue) };
+      case 'Equal To':
+        return { equals: parseInt(filterValue) };
+      case 'Is Not Equal To':
+        return { not: { equals: parseInt(filterValue) } };
+      case 'Is Before Or Equal To':
+        return { lte: new Date(filterValue) };
+      case 'Is Before':
+        return { lt: new Date(filterValue) };
+      case 'Is After Or Equal To':
+        return { gte: new Date(filterValue) };
+      case 'Is After':
+        return { gt: new Date(filterValue) };
     }
   }
 }
