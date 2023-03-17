@@ -75,4 +75,30 @@ export class PermissionService {
       return excludeData(permission, ['deleted']);
     });
   }
+
+  async getAllPermission(page) {
+    const listPermission = await this.prismaService.role_Permission.findMany({
+      where: page.filter,
+      orderBy: page.orders,
+      include: {
+        role: true,
+        permission: true,
+      },
+      skip: (page.pageNumber - 1) * page.size,
+      take: page.size,
+    });
+
+    return listPermission.map((permission) => {
+      return {
+        role: permission.role,
+        permission: excludeData(permission.permission, ['deleted']),
+      };
+    });
+  }
+
+  async countPermission(page) {
+    return await this.prismaService.role_Permission.count({
+      where: page.filter,
+    });
+  }
 }

@@ -8,12 +8,16 @@ import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 import { PermissionPerm } from '../enum/permission.enum';
 import { PermissionService } from '../services/permission.service';
 import { FindPermissionDTO } from '../dtos/findPermission.dto';
+import { PermissionPage } from '../dtos/permissionPage.dto';
+import { PagedData } from 'src/common/models/paging/pagedData.dto';
+import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
 
 @Controller('permission')
 export class PermissionController {
   constructor(
     private readonly permissionService: PermissionService,
     private readonly rolePermissionService: RolePermissionService,
+    private readonly advancedFilteringService: AdvancedFilteringService,
   ) {}
 
   @Post('/get-screens')
@@ -24,6 +28,26 @@ export class PermissionController {
       result.result = await this.permissionService.getPermissionScreen();
     } catch (error) {
       result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('')
+  @UseGuards(PermissionGuard(PermissionPerm.GetAllPermissions.permission))
+  async getAllPermission(@Body() page: PermissionPage) {
+    const result = new ReturnResult<PagedData<object>>();
+    const pagedData = new PagedData<object>(page);
+    try {
+      const data = this.advancedFilteringService.createFilter(page);
+      const listResult = await this.permissionService.getAllPermission(data);
+
+      pagedData.data = listResult;
+      pagedData.page.totalElement =
+        await this.permissionService.countPermission(data);
+
+      result.result = pagedData;
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
     return result;
   }

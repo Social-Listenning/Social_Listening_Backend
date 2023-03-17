@@ -104,7 +104,7 @@ export class UserController {
       const listResult = await this.userService.findUser(data);
 
       pagedData.data = listResult;
-      pagedData.page.totalElement = await this.userService.countUser();
+      pagedData.page.totalElement = await this.userService.countUser(data);
 
       result.result = pagedData;
     } catch (error) {
@@ -150,7 +150,7 @@ export class UserController {
 
       pagedData.data = listResult;
       pagedData.page.totalElement = await this.userService.countUserWithGroup(
-        group.id,
+        data,
       );
       result.result = pagedData;
     } catch (error) {

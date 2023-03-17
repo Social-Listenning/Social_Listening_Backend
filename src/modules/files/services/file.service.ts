@@ -43,8 +43,8 @@ export class FileService {
     });
   }
 
-  async countFileWithGroup(ownerId: string) {
-    return await this.prismaService.file.count({ where: { ownerId: ownerId } });
+  async countFileWithGroup(page) {
+    return await this.prismaService.file.count({ where: page.filter });
   }
 
   private getMimetype(file) {
