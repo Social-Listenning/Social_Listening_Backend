@@ -1,5 +1,5 @@
 export class FilterMapping {
-  value: string;
+  value: any;
   props: string;
   filterOperator: string;
 }
