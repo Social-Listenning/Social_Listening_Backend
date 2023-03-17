@@ -1,3 +1,4 @@
+import { RolePerm } from './modules/roles/enum/permission.enum';
 import { CreatePermissionDTO } from './modules/permission/dtos/createPermission.dto';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { RoleService } from './modules/roles/services/role.service';
@@ -82,6 +83,9 @@ export class AppService implements OnModuleInit {
         toDTO(permission, CreatePermissionDTO),
       ),
       ...ConvertObjectToArray(PermissionPerm).map((permission) =>
+        toDTO(permission, CreatePermissionDTO),
+      ),
+      ...ConvertObjectToArray(RolePerm).map((permission) =>
         toDTO(permission, CreatePermissionDTO),
       ),
     ];

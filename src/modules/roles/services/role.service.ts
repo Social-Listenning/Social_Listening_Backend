@@ -12,7 +12,15 @@ export class RoleService {
   }
 
   async getAllRole() {
-    return this.prismaService.role.findMany();
+    const listRole = await this.prismaService.role.findMany({
+      include: {
+        _count: {
+          select: { User: true, Role_Permission: true },
+        },
+      },
+    });
+
+    return listRole;
   }
 
   async getRoleByRoleName(roleName: string) {

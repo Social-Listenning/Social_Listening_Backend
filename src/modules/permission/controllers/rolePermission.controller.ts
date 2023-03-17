@@ -6,10 +6,39 @@ import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { formatString } from 'src/utils/formatString';
 import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 import { PermissionPerm } from '../enum/permission.enum';
+import { PermissionService } from '../services/permission.service';
+import { FindPermissionDTO } from '../dtos/findPermission.dto';
 
 @Controller('permission')
 export class PermissionController {
-  constructor(private readonly rolePermissionService: RolePermissionService) {}
+  constructor(
+    private readonly permissionService: PermissionService,
+    private readonly rolePermissionService: RolePermissionService,
+  ) {}
+
+  @Post('/get-screens')
+  @UseGuards(PermissionGuard(PermissionPerm.AssignPermission.permission))
+  async getPermissionScreen() {
+    const result = new ReturnResult<object[]>();
+    try {
+      result.result = await this.permissionService.getPermissionScreen();
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/find-permission')
+  @UseGuards(PermissionGuard(PermissionPerm.AssignPermission.permission))
+  async findPermission(@Body() data: FindPermissionDTO) {
+    const result = new ReturnResult<object[]>();
+    try {
+      result.result = await this.permissionService.findPermission(data);
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
 
   @Post('assign')
   @UseGuards(PermissionGuard(PermissionPerm.AssignPermission.permission))
