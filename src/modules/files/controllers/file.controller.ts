@@ -55,7 +55,7 @@ export class FileController {
 
       result.data = listResult;
       result.page.totalElement = await this.fileService.countFileWithGroup(
-        group,
+        data,
       );
     } catch (error) {}
     return result;

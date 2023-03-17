@@ -9,6 +9,11 @@ export const PermissionPerm = {
     permission: 'remove-permission',
     screen: 'Permissions',
   },
+  GetAllPermissions: {
+    displayName: 'Get All Permissions',
+    permission: 'table-permission',
+    screen: 'Permissions',
+  },
 } as const;
 
 export type PermissionPerm = keyof typeof PermissionPerm;

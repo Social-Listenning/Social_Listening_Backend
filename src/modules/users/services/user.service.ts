@@ -267,8 +267,10 @@ export class UserService {
     return listUser.map((user) => excludeData(user, excludeUsers));
   }
 
-  async countUser() {
-    return await this.prismaService.user.count();
+  async countUser(page) {
+    return await this.prismaService.user.count({
+      where: page.filter,
+    });
   }
 
   async findUserWithGroup(page) {
@@ -291,9 +293,9 @@ export class UserService {
     });
   }
 
-  async countUserWithGroup(groupId: string) {
-    return await this.prismaService.user.count({
-      where: { socialGroup: { id: groupId } },
+  async countUserWithGroup(page) {
+    return await this.prismaService.userInGroup.count({
+      where: page.filter,
     });
   }
 
