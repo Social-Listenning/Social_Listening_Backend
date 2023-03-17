@@ -22,8 +22,21 @@ export class AdvancedFilteringService {
 
   private buildColumnFilter(filter: FilterMapping) {
     const props = filter.props;
-    const queryString = this.getQuery(filter.filterOperator, filter.value);
-    return this.buildQuery(props, queryString);
+    const isArray = Array.isArray(filter.value);
+
+    if (isArray) {
+      const orArray = { OR: [] };
+      filter.value = filter.value.filter((x) => x !== undefined && x !== null);
+      filter.value.forEach((value) => {
+        const queryString = this.getQuery(filter.filterOperator, value);
+        const query = this.buildQuery(props, queryString);
+        orArray.OR.push(query);
+      });
+      return filter.value.length > 0 ? orArray : {};
+    } else {
+      const queryString = this.getQuery(filter.filterOperator, filter.value);
+      return this.buildQuery(props, queryString);
+    }
   }
 
   private buildQuery(props: string, obj: any) {
@@ -54,17 +67,17 @@ export class AdvancedFilteringService {
       case 'End With':
         return { endWith: filterValue };
       case 'Is Greater Than Or Equal To':
-        return { gte: parseInt(filterValue) };
+        return { gte: filterValue };
       case 'Is Greater Than':
-        return { gt: parseInt(filterValue) };
+        return { gt: filterValue };
       case 'Is Less Than Or Equal To':
-        return { lte: parseInt(filterValue) };
+        return { lte: filterValue };
       case 'Is Less Than':
-        return { lt: parseInt(filterValue) };
-      case 'Equal To':
-        return { equals: parseInt(filterValue) };
+        return { lt: filterValue };
+      case 'Is Equal To':
+        return { equals: filterValue };
       case 'Is Not Equal To':
-        return { not: { equals: parseInt(filterValue) } };
+        return { not: { equals: filterValue } };
       case 'Is Before Or Equal To':
         return { lte: new Date(filterValue) };
       case 'Is Before':
