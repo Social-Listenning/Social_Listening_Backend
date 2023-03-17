@@ -41,4 +41,19 @@ export class Helper {
     const mimetype = fileName.split('.').pop();
     return mimetype;
   }
+
+  public static flatObject(object) {
+    const data = Object.keys(object).reduce((acc, key) => {
+      if (typeof object[key] === 'object' && object[key] !== null) {
+        Object.keys(object[key]).forEach((subKey) => {
+          acc[subKey] = object[key][subKey];
+        });
+      } else {
+        acc[key] = object[key];
+      }
+      return acc;
+    }, {});
+
+    return data;
+  }
 }

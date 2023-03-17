@@ -9,6 +9,7 @@ import { excludeData } from 'src/utils/excludeData';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { formatString } from 'src/utils/formatString';
 import { Permission } from '../model/permission.model';
+import { FindPermissionDTO } from '../dtos/findPermission.dto';
 
 @Injectable()
 export class PermissionService {
@@ -46,6 +47,32 @@ export class PermissionService {
   async getPermissionByName(permissionName: string) {
     return await this.prismaService.permission.findFirst({
       where: { permission: permissionName },
+    });
+  }
+
+  async getPermissionScreen() {
+    const listScreen = await this.prismaService.permission.groupBy({
+      by: ['screen'],
+      _count: {
+        id: true,
+      },
+    });
+
+    return listScreen.map((screen) => {
+      return {
+        screen: screen.screen,
+        permission: screen._count.id,
+      };
+    });
+  }
+
+  async findPermission(data: FindPermissionDTO) {
+    const listPermisison = await this.prismaService.permission.findMany({
+      where: { screen: { in: data.screen } },
+    });
+
+    return listPermisison.map((permission) => {
+      return excludeData(permission, ['deleted']);
     });
   }
 }
