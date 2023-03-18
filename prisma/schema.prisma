@@ -27,7 +27,7 @@ model Role {
 
 model User {
   id           String         @id @default(uuid())
-  email        String         @unique
+  email        String
   userName     String
   fullName     String
   phoneNumber  String?
@@ -118,6 +118,7 @@ model UserInGroup {
   group   SocialGroup @relation(fields: [groupId], references: [id])
   groupId String
   joinAt  DateTime    @default(now())
+  delete  Boolean     @default(false)
 
   @@id([userId, groupId])
 }

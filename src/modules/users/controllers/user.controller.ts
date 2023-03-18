@@ -84,11 +84,20 @@ export class UserController {
       const userExist = await this.userService.getUserById(id);
       if (!userExist) throw new Error(`User with id: ${id} is not exists`);
 
-      const group = await this.groupService.getSocialGroupByManagerId(user.id);
-      if (group.managerId === user.id)
-        throw new Error(`Can not remove yourself from group`);
+      const role = await this.roleService.getRoleById(userExist.roleId);
 
-      await this.userInGroupService.removeUserFromGroup(userExist.id, group.id);
+      if (role.roleName !== 'ADMIN') {
+        const group = await this.groupService.getSocialGroupByManagerId(
+          user.id,
+        );
+        if (group.managerId === user.id)
+          throw new Error(`Can not remove yourself from group`);
+
+        await this.userInGroupService.removeUserFromGroup(
+          userExist.id,
+          group.id,
+        );
+      }
       await this.userService.removeAccount(userExist.id);
 
       result.result = true;
@@ -105,6 +114,7 @@ export class UserController {
     const pagedData = new PagedData<object>(page);
     try {
       const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND.push({ deleteAt: { equals: false } });
       const listResult = await this.userService.findUser(data);
 
       pagedData.data = listResult;
@@ -149,6 +159,7 @@ export class UserController {
           id: group.id,
         },
       });
+      data.filter.AND.push({ delete: { equals: false } });
 
       const listResult = await this.userService.findUserWithGroup(data);
 

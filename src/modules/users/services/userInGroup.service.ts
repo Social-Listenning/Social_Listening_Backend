@@ -15,13 +15,14 @@ export class UserInGroupService {
   }
 
   async removeUserFromGroup(userId: string, groupId: string) {
-    await this.prismaService.userInGroup.delete({
+    await this.prismaService.userInGroup.update({
       where: {
         userId_groupId: {
           userId: userId,
           groupId: groupId,
         },
       },
+      data: { delete: true },
     });
   }
 

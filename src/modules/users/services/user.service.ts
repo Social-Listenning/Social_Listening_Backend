@@ -77,7 +77,9 @@ export class UserService {
   }
 
   async getUserByEmail(email: string) {
-    return this.prismaService.user.findFirst({ where: { email: email } });
+    return this.prismaService.user.findFirst({
+      where: { email: email, deleteAt: false },
+    });
   }
 
   async activeAccount(userId: string) {
@@ -250,8 +252,9 @@ export class UserService {
   }
 
   async removeAccount(userId: string) {
-    return await this.prismaService.user.delete({
+    return await this.prismaService.user.update({
       where: { id: userId },
+      data: { deleteAt: true },
     });
   }
 
