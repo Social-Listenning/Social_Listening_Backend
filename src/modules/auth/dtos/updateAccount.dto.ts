@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
 
 export class UpdateAccountDTO {
   @IsString()
@@ -13,6 +13,9 @@ export class UpdateAccountDTO {
 
   @IsString()
   @IsOptional()
-  @IsPhoneNumber()
+  @Matches(/(0)+([3|5|7|8|9])+([0-9]{8})\b/)
   phoneNumber: string;
+
+  @IsString()
+  gender: string;
 }

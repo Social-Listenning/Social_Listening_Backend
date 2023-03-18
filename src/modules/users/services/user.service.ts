@@ -196,6 +196,7 @@ export class UserService {
           userName: data.userName,
           fullName: data.fullName,
           phoneNumber: data?.phoneNumber,
+          gender: Helper.getGender(data.gender),
         },
       });
 
@@ -231,6 +232,7 @@ export class UserService {
         data: {
           ...userCreated,
           isActive: true,
+          gender: Helper.getGender(data.gender),
         },
       });
       result.result = excludeData(user, [
@@ -332,12 +334,13 @@ export class UserService {
           const isChecked = this.checkData(user);
           if (!isChecked) throw Error();
 
-          const _ = await this.roleService.getRoleByRoleName(user.roleName);
+          const _ = await this.roleService.getRoleByRoleName('SUPPORTER');
           if (_.level >= roleUser.level) throw Error();
 
           const createEmployeeInput: CreateEmployeeDTO = {
             ...user,
             roleId: _.id,
+            gender: Helper.getGender(user.gender),
           };
 
           const userCreated = await this.createEmployee(createEmployeeInput);

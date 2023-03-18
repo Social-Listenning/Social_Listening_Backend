@@ -56,4 +56,10 @@ export class Helper {
 
     return data;
   }
+
+  public static getGender(gender: string) {
+    if (gender.toLowerCase() === 'Male'.toLowerCase()) return 'Male';
+    else if (gender.toLowerCase() === 'Female'.toLowerCase()) return 'Female';
+    return 'Other';
+  }
 }

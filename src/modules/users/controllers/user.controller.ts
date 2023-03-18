@@ -56,6 +56,10 @@ export class UserController {
         throw new Error(`User with email ${data.email} already exists`);
 
       const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      const role = await this.roleService.getRoleByRoleName('SUPPORTER');
+
+      // Set Role when creating is Supporter
+      data.roleId = role.id;
 
       const employee = await this.userService.createEmployee(data);
       if (employee.result === null) throw new Error(employee.message);
