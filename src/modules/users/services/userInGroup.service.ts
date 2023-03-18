@@ -34,4 +34,10 @@ export class UserInGroupService {
 
     return data !== null ? data.group : null;
   }
+
+  async getUserWithGroup(userId: string, groupId: string) {
+    return await this.prismaService.userInGroup.findFirst({
+      where: { userId: userId, groupId: groupId, delete: false },
+    });
+  }
 }

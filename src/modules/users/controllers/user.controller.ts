@@ -27,6 +27,7 @@ import { FilesInterceptor } from 'src/modules/files/interceptors/file.intercepto
 import { v4 as uuidv4 } from 'uuid';
 import { ImportUserQueueService } from 'src/modules/queue/services/importUser.queue.service';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
+import { EditEmployeeDTO } from '../dtos/editEmployee.dto';
 
 @Controller('user')
 export class UserController {
@@ -66,6 +67,38 @@ export class UserController {
       else employeeData = employee.result;
 
       await this.userInGroupService.addUserToGroup(employeeData.id, group.id);
+      result = employee;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/edit')
+  @UseGuards(EmailConfirmGuard)
+  @UseGuards(PermissionGuard(UserPerm.UpdateUser.permission))
+  async editEmployee(
+    @Req() request: RequestWithUser,
+    @Body() data: EditEmployeeDTO,
+  ) {
+    let result = new ReturnResult<User>();
+    const user = request.user;
+
+    try {
+      const userExist = await this.userService.getUserByEmail(data.email);
+      if (userExist && userExist.id !== data.id)
+        throw new Error(`User with email ${data.email} already exists`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      const userInGroup = await this.userInGroupService.getUserWithGroup(
+        data.id,
+        group.id,
+      );
+      if (!userInGroup) throw new Error(`Cannot edit the user`);
+
+      const employee = await this.userService.editEmployee(data);
+      if (employee.result === null) throw new Error(employee.message);
+
       result = employee;
     } catch (error) {
       result.message = error.message;

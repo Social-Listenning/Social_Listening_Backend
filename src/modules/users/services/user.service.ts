@@ -24,6 +24,7 @@ import { UserInGroupService } from './userInGroup.service';
 import { CreateFileDTO } from 'src/modules/files/dtos/createFile.dto';
 import { FileService } from 'src/modules/files/services/file.service';
 import { NotificationService } from 'src/modules/notifications/services/notification.service';
+import { EditEmployeeDTO } from '../dtos/editEmployee.dto';
 
 @Injectable()
 export class UserService {
@@ -234,6 +235,33 @@ export class UserService {
         data: {
           ...userCreated,
           isActive: true,
+          gender: Helper.getGender(data.gender),
+        },
+      });
+      result.result = excludeData(user, [
+        'password',
+        'createdAt',
+        'updatedAt',
+        'roleId',
+        'deleteAt',
+        'refreshToken',
+      ]);
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+    return result;
+  }
+
+  async editEmployee(data: EditEmployeeDTO) {
+    const result = new ReturnResult<User>();
+    try {
+      const user = await this.prismaService.user.update({
+        where: { id: data.id },
+        data: {
+          email: data.email,
+          userName: data.userName,
+          fullName: data.fullName,
+          phoneNumber: data.phoneNumber,
           gender: Helper.getGender(data.gender),
         },
       });

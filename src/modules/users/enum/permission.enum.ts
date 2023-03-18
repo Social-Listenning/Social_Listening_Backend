@@ -14,6 +14,11 @@ export const UserPerm = {
     permission: 'create-user',
     screen: 'Users',
   },
+  UpdateUser: {
+    displayName: 'Update User',
+    permission: 'update-user',
+    screen: 'Users',
+  },
   ImportUser: {
     displayName: 'Import User',
     permission: 'import-user',
