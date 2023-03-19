@@ -14,6 +14,11 @@ export const UserPerm = {
     permission: 'create-user',
     screen: 'Users',
   },
+  UpdateUser: {
+    displayName: 'Update User',
+    permission: 'update-user',
+    screen: 'Users',
+  },
   ImportUser: {
     displayName: 'Import User',
     permission: 'import-user',
@@ -22,6 +27,21 @@ export const UserPerm = {
   RemoveUser: {
     displayName: 'Remove User',
     permission: 'remove-user',
+    screen: 'Users',
+  },
+  ActivateUser: {
+    displayName: 'Activate User',
+    permission: 'activate-user',
+    screen: 'Users',
+  },
+  DeacticateUser: {
+    displayName: 'Deactivate User',
+    permission: 'deactivate-user',
+    screen: 'Users',
+  },
+  AssignUsers: {
+    displayName: 'Assign User',
+    permission: 'assign-user',
     screen: 'Users',
   },
 } as const;

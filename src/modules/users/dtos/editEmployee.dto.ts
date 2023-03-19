@@ -1,9 +1,8 @@
-import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
+import { IsOptional, IsString, Matches } from 'class-validator';
 
-export class UpdateAccountDTO {
+export class EditEmployeeDTO {
   @IsString()
-  @IsEmail()
-  email: string;
+  id: string;
 
   @IsString()
   userName: string;
@@ -12,10 +11,14 @@ export class UpdateAccountDTO {
   fullName: string;
 
   @IsString()
+  email: string;
+
+  @IsString()
   @IsOptional()
   @Matches(/(0)+([3|5|7|8|9])+([0-9]{8})\b/)
   phoneNumber: string;
 
   @IsString()
+  @IsOptional()
   gender: string;
 }

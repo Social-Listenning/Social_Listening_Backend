@@ -4,7 +4,7 @@ import {
   CreateSocialGroupDTO,
   EditSocialGroupDTO,
 } from '../dtos/socialGroup.dto';
-import { excludeData } from 'src/utils/excludeData';
+import { SocialTabDTO } from '../dtos/socialTab.dto';
 
 @Injectable()
 export class SocialGroupService {
@@ -26,12 +26,10 @@ export class SocialGroupService {
   }
 
   async getSocialGroupByManagerId(userId: string) {
-    let newData = null;
     const socialGroup = await this.prismaService.socialGroup.findFirst({
       where: { managerId: userId },
     });
-    if (socialGroup) newData = excludeData(socialGroup, ['managerId']);
-    return newData;
+    return socialGroup;
   }
 
   async getSocialGroupById(socialGroupId: string) {
@@ -42,5 +40,27 @@ export class SocialGroupService {
       },
     });
     return socialGroup;
+  }
+
+  async createNewTab(data: SocialTabDTO) {
+    const newTab = await this.prismaService.socialTab.create({
+      data: {
+        group: {
+          connect: { id: data.groupId },
+        },
+        SocialNetwork: {
+          connect: { id: data.socialId },
+        },
+        name: data.name,
+      },
+    });
+    return newTab;
+  }
+
+  async checkActivate(userId: string) {
+    const userInGroup = await this.prismaService.userInGroup.findFirst({
+      where: { userId: userId, delete: false },
+    });
+    return userInGroup && userInGroup.isActive ? true : false;
   }
 }

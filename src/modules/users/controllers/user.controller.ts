@@ -27,6 +27,9 @@ import { FilesInterceptor } from 'src/modules/files/interceptors/file.intercepto
 import { v4 as uuidv4 } from 'uuid';
 import { ImportUserQueueService } from 'src/modules/queue/services/importUser.queue.service';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
+import { EditEmployeeDTO } from '../dtos/editEmployee.dto';
+import { AssignUserDTO } from '../dtos/assignUser.dto';
+import { UserInTabService } from '../services/userInTab.service';
 
 @Controller('user')
 export class UserController {
@@ -34,6 +37,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly roleService: RoleService,
     private readonly groupService: SocialGroupService,
+    private readonly userInTabService: UserInTabService,
     private readonly userInGroupService: UserInGroupService,
     private readonly importUserQueueService: ImportUserQueueService,
     private readonly advancedFilteringService: AdvancedFilteringService,
@@ -56,6 +60,10 @@ export class UserController {
         throw new Error(`User with email ${data.email} already exists`);
 
       const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      const role = await this.roleService.getRoleByRoleName('SUPPORTER');
+
+      // Set Role when creating is Supporter
+      data.roleId = role.id;
 
       const employee = await this.userService.createEmployee(data);
       if (employee.result === null) throw new Error(employee.message);
@@ -63,6 +71,53 @@ export class UserController {
 
       await this.userInGroupService.addUserToGroup(employeeData.id, group.id);
       result = employee;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/edit')
+  @UseGuards(EmailConfirmGuard)
+  @UseGuards(PermissionGuard(UserPerm.UpdateUser.permission))
+  async editEmployee(
+    @Req() request: RequestWithUser,
+    @Body() data: EditEmployeeDTO,
+  ) {
+    let result = new ReturnResult<User>();
+    const user = request.user;
+
+    try {
+      const userChange = await this.userService.getUserById(data.id);
+      if (!userChange) throw new Error(`User ${data.id} does not exist`);
+
+      const userExist = await this.userService.getUserByEmail(data.email);
+      if (userExist && userExist.id !== data.id)
+        throw new Error(`User with email ${data.email} already exists`);
+
+      const role = await this.roleService.getRoleById(userChange.roleId);
+      const roleOwner = await this.roleService.getRoleByRoleName(user.role);
+
+      if (role.roleName === 'ADMIN' && user.role === 'ADMIN') {
+        const employee = await this.userService.editEmployee(data);
+        if (employee.result === null) throw new Error(employee.message);
+
+        result = employee;
+      } else if (user.role === 'OWNER' && role.level < roleOwner.level) {
+        const group = await this.groupService.getSocialGroupByManagerId(
+          user.id,
+        );
+        const userInGroup = await this.userInGroupService.getUserWithGroup(
+          data.id,
+          group.id,
+        );
+        if (!userInGroup) throw new Error(`Cannot edit this account`);
+
+        const employee = await this.userService.editEmployee(data);
+        if (employee.result === null) throw new Error(employee.message);
+
+        result = employee;
+      } else throw new Error(`Cannot edit this account`);
     } catch (error) {
       result.message = error.message;
     }
@@ -80,11 +135,20 @@ export class UserController {
       const userExist = await this.userService.getUserById(id);
       if (!userExist) throw new Error(`User with id: ${id} is not exists`);
 
-      const group = await this.groupService.getSocialGroupByManagerId(user.id);
-      if (group.managerId === user.id)
-        throw new Error(`Can not remove yourself from group`);
+      const role = await this.roleService.getRoleById(userExist.roleId);
 
-      await this.userInGroupService.removeUserFromGroup(userExist.id, group.id);
+      if (role.roleName !== 'ADMIN') {
+        const group = await this.groupService.getSocialGroupByManagerId(
+          user.id,
+        );
+        if (group.managerId === user.id)
+          throw new Error(`Can not remove yourself from group`);
+
+        await this.userInGroupService.removeUserFromGroup(
+          userExist.id,
+          group.id,
+        );
+      }
       await this.userService.removeAccount(userExist.id);
 
       result.result = true;
@@ -101,6 +165,7 @@ export class UserController {
     const pagedData = new PagedData<object>(page);
     try {
       const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND.push({ deleteAt: { equals: false } });
       const listResult = await this.userService.findUser(data);
 
       pagedData.data = listResult;
@@ -145,6 +210,7 @@ export class UserController {
           id: group.id,
         },
       });
+      data.filter.AND.push({ delete: { equals: false } });
 
       const listResult = await this.userService.findUserWithGroup(data);
 
@@ -221,5 +287,85 @@ export class UserController {
       owner: user.id,
       columnMapping: mappingColumn,
     });
+  }
+
+  @Post('/activate/:id')
+  @UseGuards(PermissionGuard(UserPerm.ActivateUser.permission))
+  async activateAccount(@Req() request: RequestWithUser, @Param() { id }) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+
+    try {
+      const userExist = await this.userService.getUserById(id);
+      if (!userExist) throw new Error(`User with id: ${id} is not exists`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (group.managerId === userExist.id)
+        throw new Error(`Can not activate yourself from group`);
+
+      const userInGroup = await this.userInGroupService.getUserWithGroup(
+        id,
+        group.id,
+      );
+      if (!userInGroup)
+        throw new Error(`User with id: ${id} not in group ${group.name}`);
+
+      await this.userInGroupService.activateAccount(userExist.id, group.id);
+
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/deactivate/:id')
+  @UseGuards(PermissionGuard(UserPerm.ActivateUser.permission))
+  async deactivateAccount(@Req() request: RequestWithUser, @Param() { id }) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+
+    try {
+      const userExist = await this.userService.getUserById(id);
+      if (!userExist) throw new Error(`User with id: ${id} is not exists`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (group.managerId === userExist.id)
+        throw new Error(`Can not deactivate yourself from group`);
+
+      const userInGroup = await this.userInGroupService.getUserWithGroup(
+        id,
+        group.id,
+      );
+      if (!userInGroup)
+        throw new Error(`User with id: ${id} not in group ${group.name}`);
+
+      await this.userInGroupService.deactivateAccount(userExist.id, group.id);
+
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/assign')
+  @UseGuards(PermissionGuard(UserPerm.AssignUsers.permission))
+  async assignUser(
+    @Req() request: RequestWithUser,
+    @Body() data: AssignUserDTO,
+  ) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+    try {
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (!group) throw new Error(`You don't have permission to assign users`);
+
+      await this.userInTabService.assignUsers(data);
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
   }
 }
