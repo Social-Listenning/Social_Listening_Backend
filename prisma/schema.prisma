@@ -124,17 +124,18 @@ model SocialNetwork {
 }
 
 model UserInGroup {
-  user    User        @relation(fields: [userId], references: [id])
-  userId  String
-  group   SocialGroup @relation(fields: [groupId], references: [id])
-  groupId String
-  joinAt  DateTime    @default(now())
-  delete  Boolean     @default(false)
-
-  @@id([userId, groupId])
+  id       Int         @id @default(autoincrement())
+  user     User        @relation(fields: [userId], references: [id])
+  userId   String
+  group    SocialGroup @relation(fields: [groupId], references: [id])
+  groupId  String
+  joinAt   DateTime    @default(now())
+  delete   Boolean     @default(false)
+  isActive Boolean     @default(true)
 }
 
 model UserInTab {
+  id        Int       @id @default(autoincrement())
   user      User      @relation(fields: [userId], references: [id])
   userId    String
   socialTab SocialTab @relation(fields: [tabId], references: [id])
@@ -143,8 +144,6 @@ model UserInTab {
   roleId    String
   joinAt    DateTime  @default(now())
   delete    Boolean   @default(false)
-
-  @@id([userId, tabId])
 }
 
 model File {

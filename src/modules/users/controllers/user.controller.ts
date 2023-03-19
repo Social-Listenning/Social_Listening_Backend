@@ -285,4 +285,64 @@ export class UserController {
       columnMapping: mappingColumn,
     });
   }
+
+  @Post('/activate/:id')
+  @UseGuards(PermissionGuard(UserPerm.ActivateUser.permission))
+  async activateAccount(@Req() request: RequestWithUser, @Param() { id }) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+
+    try {
+      const userExist = await this.userService.getUserById(id);
+      if (!userExist) throw new Error(`User with id: ${id} is not exists`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (group.managerId === userExist.id)
+        throw new Error(`Can not activate yourself from group`);
+
+      const userInGroup = await this.userInGroupService.getUserWithGroup(
+        id,
+        group.id,
+      );
+      if (!userInGroup)
+        throw new Error(`User with id: ${id} not in group ${group.name}`);
+
+      await this.userInGroupService.activateAccount(userExist.id, group.id);
+
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/deactivate/:id')
+  @UseGuards(PermissionGuard(UserPerm.ActivateUser.permission))
+  async deactivateAccount(@Req() request: RequestWithUser, @Param() { id }) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+
+    try {
+      const userExist = await this.userService.getUserById(id);
+      if (!userExist) throw new Error(`User with id: ${id} is not exists`);
+
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (group.managerId === userExist.id)
+        throw new Error(`Can not deactivate yourself from group`);
+
+      const userInGroup = await this.userInGroupService.getUserWithGroup(
+        id,
+        group.id,
+      );
+      if (!userInGroup)
+        throw new Error(`User with id: ${id} not in group ${group.name}`);
+
+      await this.userInGroupService.deactivateAccount(userExist.id, group.id);
+
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
 }

@@ -27,12 +27,12 @@ export class SocialGroupService {
   }
 
   async getSocialGroupByManagerId(userId: string) {
-    let newData = null;
+    // const newData = null;
     const socialGroup = await this.prismaService.socialGroup.findFirst({
       where: { managerId: userId },
     });
-    if (socialGroup) newData = excludeData(socialGroup, ['managerId']);
-    return newData;
+    // if (socialGroup) newData = excludeData(socialGroup, ['managerId']);
+    return socialGroup;
   }
 
   async getSocialGroupById(socialGroupId: string) {
@@ -58,5 +58,12 @@ export class SocialGroupService {
       },
     });
     return newTab;
+  }
+
+  async checkActivate(userId: string) {
+    const userInGroup = await this.prismaService.userInGroup.findFirst({
+      where: { userId: userId, delete: false },
+    });
+    return userInGroup && userInGroup.isActive ? true : false;
   }
 }

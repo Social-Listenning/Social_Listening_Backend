@@ -15,13 +15,9 @@ export class UserInGroupService {
   }
 
   async removeUserFromGroup(userId: string, groupId: string) {
+    const data = await this.getUserWithGroup(userId, groupId);
     await this.prismaService.userInGroup.update({
-      where: {
-        userId_groupId: {
-          userId: userId,
-          groupId: groupId,
-        },
-      },
+      where: { id: data.id },
       data: { delete: true },
     });
   }
@@ -38,6 +34,22 @@ export class UserInGroupService {
   async getUserWithGroup(userId: string, groupId: string) {
     return await this.prismaService.userInGroup.findFirst({
       where: { userId: userId, groupId: groupId, delete: false },
+    });
+  }
+
+  async activateAccount(userId: string, groupId: string) {
+    const data = await this.getUserWithGroup(userId, groupId);
+    return await this.prismaService.userInGroup.update({
+      where: { id: data.id },
+      data: { isActive: true },
+    });
+  }
+
+  async deactivateAccount(userId: string, groupId: string) {
+    const data = await this.getUserWithGroup(userId, groupId);
+    return await this.prismaService.userInGroup.update({
+      where: { id: data.id },
+      data: { isActive: false },
     });
   }
 }
