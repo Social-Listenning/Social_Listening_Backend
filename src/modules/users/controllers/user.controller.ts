@@ -28,6 +28,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ImportUserQueueService } from 'src/modules/queue/services/importUser.queue.service';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { EditEmployeeDTO } from '../dtos/editEmployee.dto';
+import { AssignUserDTO } from '../dtos/assignUser.dto';
+import { UserInTabService } from '../services/userInTab.service';
 
 @Controller('user')
 export class UserController {
@@ -35,6 +37,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly roleService: RoleService,
     private readonly groupService: SocialGroupService,
+    private readonly userInTabService: UserInTabService,
     private readonly userInGroupService: UserInGroupService,
     private readonly importUserQueueService: ImportUserQueueService,
     private readonly advancedFilteringService: AdvancedFilteringService,
@@ -339,6 +342,26 @@ export class UserController {
 
       await this.userInGroupService.deactivateAccount(userExist.id, group.id);
 
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/assign')
+  @UseGuards(PermissionGuard(UserPerm.AssignUsers.permission))
+  async assignUser(
+    @Req() request: RequestWithUser,
+    @Body() data: AssignUserDTO,
+  ) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+    try {
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (!group) throw new Error(`You don't have permission to assign users`);
+
+      await this.userInTabService.assignUsers(data);
       result.result = true;
     } catch (error) {
       result.message = error.message;

@@ -39,6 +39,11 @@ export const UserPerm = {
     permission: 'deactivate-user',
     screen: 'Users',
   },
+  AssignUsers: {
+    displayName: 'Assign User',
+    permission: 'assign-user',
+    screen: 'Users',
+  },
 } as const;
 
 export type UserPerm = keyof typeof UserPerm;
