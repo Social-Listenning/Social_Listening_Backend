@@ -3,9 +3,11 @@ import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 import { Module } from '@nestjs/common';
 import { SocialNetworkController } from './controllers/socialNetwork.controller';
 import { SocialNetworkService } from './services/socialNetwork.service';
+import { UserModule } from '../users/user.module';
+import { RoleModule } from '../roles/role.module';
 
 @Module({
-  imports: [PrismaModule, SocialGroupModule],
+  imports: [PrismaModule, SocialGroupModule, UserModule, RoleModule],
   controllers: [SocialNetworkController],
   providers: [SocialNetworkService],
   exports: [SocialNetworkService],

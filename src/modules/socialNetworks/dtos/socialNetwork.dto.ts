@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ConnectSocialNetworkDTO {
   @IsString()
@@ -10,4 +10,13 @@ export class ConnectSocialNetworkDTO {
   @IsString()
   @IsOptional()
   extendData: string;
+}
+
+export class UpdateSocialNetworkDTO {
+  @IsString()
+  id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 }

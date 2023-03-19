@@ -4,6 +4,11 @@ export const SocialNetworkPerm = {
     permission: 'connect-social-network',
     screen: 'Social Group',
   },
+  updateSocialNetwork: {
+    displayName: 'Update Social Network',
+    permission: 'update-social-network',
+    screen: 'Social Group',
+  },
   disconnectSocialNetwork: {
     displayName: 'Disconnect Social Network',
     permission: 'disconnect-social-network',

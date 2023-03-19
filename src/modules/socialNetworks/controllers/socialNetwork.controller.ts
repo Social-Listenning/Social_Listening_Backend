@@ -1,17 +1,24 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { SocialNetworkService } from '../services/socialNetwork.service';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
-import { ConnectSocialNetworkDTO } from '../dtos/socialNetwork.dto';
+import {
+  ConnectSocialNetworkDTO,
+  UpdateSocialNetworkDTO,
+} from '../dtos/socialNetwork.dto';
 import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 import { SocialNetworkPerm } from '../enum/permission.enum';
 import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
+import { RoleService } from 'src/modules/roles/services/role.service';
+import { UserInTabService } from 'src/modules/users/services/userInTab.service';
 
 @Controller('socialNetwork')
 export class SocialNetworkController {
   constructor(
+    private readonly roleService: RoleService,
     private readonly groupService: SocialGroupService,
+    private readonly userInTabService: UserInTabService,
     private readonly socialNetworkService: SocialNetworkService,
   ) {}
 
@@ -25,6 +32,8 @@ export class SocialNetworkController {
     const result = new ReturnResult<object>();
 
     try {
+      const role = await this.roleService.getRoleByRoleName(user.role);
+
       const group = await this.groupService.getSocialGroupByManagerId(user.id);
       if (!group)
         throw new Error(`You don't have permission to connect social network`);
@@ -34,16 +43,25 @@ export class SocialNetworkController {
       if (!socialNetworkCreated)
         throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
 
-      const socialTabCreated = await this.groupService.createNewTab({
+      const tabCreated = await this.groupService.createNewTab({
         name: socialNetworkCreated.name,
         groupId: group.id,
         socialId: socialNetworkCreated.id,
       });
+      if (!tabCreated) throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+
+      await this.userInTabService.addUserToTab(user.id, tabCreated.id, role.id);
 
       result.result = socialNetworkCreated;
     } catch (error) {
       result.message = error.message;
     }
     return result;
+  }
+
+  @Put('/edit')
+  @UseGuards(PermissionGuard(SocialNetworkPerm.updateSocialNetwork.permission))
+  async updateSocialNetwork(@Body() data: UpdateSocialNetworkDTO) {
+    return await this.socialNetworkService.updateSocialNetwork(data);
   }
 }

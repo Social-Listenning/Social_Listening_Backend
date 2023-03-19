@@ -10,6 +10,7 @@ import { FileModule } from '../files/file.module';
 import { SettingModule } from '../setting/setting.module';
 import { QueueModule } from '../queue/queue.module';
 import { NotificationModule } from '../notifications/notification.module';
+import { UserInTabService } from './services/userInTab.service';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { NotificationModule } from '../notifications/notification.module';
     forwardRef(() => QueueModule),
   ],
   controllers: [UserController],
-  providers: [UserService, UserInGroupService],
-  exports: [UserService, UserInGroupService],
+  providers: [UserService, UserInGroupService, UserInTabService],
+  exports: [UserService, UserInGroupService, UserInTabService],
 })
 export class UserModule {}
