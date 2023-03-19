@@ -11,6 +11,7 @@ import { TokenModule } from './modules/token/token.module';
 import { SocialGroupModule } from './modules/socialGroups/socialGroup.module';
 import { FileModule } from './modules/files/file.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { SocialNetworkModule } from './modules/socialNetworks/socialNetwork.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NotificationModule } from './modules/notifications/notification.module'
     SocialGroupModule,
     FileModule,
     NotificationModule,
+    SocialNetworkModule,
   ],
   controllers: [],
   providers: [AppService],

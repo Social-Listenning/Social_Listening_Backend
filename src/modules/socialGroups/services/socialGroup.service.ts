@@ -5,6 +5,7 @@ import {
   EditSocialGroupDTO,
 } from '../dtos/socialGroup.dto';
 import { excludeData } from 'src/utils/excludeData';
+import { SocialTabDTO } from '../dtos/socialTab.dto';
 
 @Injectable()
 export class SocialGroupService {
@@ -42,5 +43,20 @@ export class SocialGroupService {
       },
     });
     return socialGroup;
+  }
+
+  async createNewTab(data: SocialTabDTO) {
+    const newTab = await this.prismaService.socialTab.create({
+      data: {
+        group: {
+          connect: { id: data.groupId },
+        },
+        SocialNetwork: {
+          connect: { id: data.socialId },
+        },
+        name: data.name,
+      },
+    });
+    return newTab;
   }
 }
