@@ -85,21 +85,36 @@ export class UserController {
     const user = request.user;
 
     try {
+      const userChange = await this.userService.getUserById(data.id);
+      if (!userChange) throw new Error(`User ${data.id} does not exist`);
+
       const userExist = await this.userService.getUserByEmail(data.email);
       if (userExist && userExist.id !== data.id)
         throw new Error(`User with email ${data.email} already exists`);
 
-      const group = await this.groupService.getSocialGroupByManagerId(user.id);
-      const userInGroup = await this.userInGroupService.getUserWithGroup(
-        data.id,
-        group.id,
-      );
-      if (!userInGroup) throw new Error(`Cannot edit the user`);
+      const role = await this.roleService.getRoleById(userChange.roleId);
+      const roleOwner = await this.roleService.getRoleByRoleName(user.role);
 
-      const employee = await this.userService.editEmployee(data);
-      if (employee.result === null) throw new Error(employee.message);
+      if (role.roleName === 'ADMIN' && user.role === 'ADMIN') {
+        const employee = await this.userService.editEmployee(data);
+        if (employee.result === null) throw new Error(employee.message);
 
-      result = employee;
+        result = employee;
+      } else if (user.role === 'OWNER' && role.level < roleOwner.level) {
+        const group = await this.groupService.getSocialGroupByManagerId(
+          user.id,
+        );
+        const userInGroup = await this.userInGroupService.getUserWithGroup(
+          data.id,
+          group.id,
+        );
+        if (!userInGroup) throw new Error(`Cannot edit this account`);
+
+        const employee = await this.userService.editEmployee(data);
+        if (employee.result === null) throw new Error(employee.message);
+
+        result = employee;
+      } else throw new Error(`Cannot edit this account`);
     } catch (error) {
       result.message = error.message;
     }
