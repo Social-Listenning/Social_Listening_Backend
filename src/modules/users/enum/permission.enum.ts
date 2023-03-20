@@ -24,6 +24,11 @@ export const UserPerm = {
     permission: 'import-user',
     screen: 'Users',
   },
+  ExportUser: {
+    displayName: 'Export User',
+    permission: 'export-user',
+    screen: 'Users',
+  },
   RemoveUser: {
     displayName: 'Remove User',
     permission: 'remove-user',

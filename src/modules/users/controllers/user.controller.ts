@@ -31,6 +31,8 @@ import { EditEmployeeDTO } from '../dtos/editEmployee.dto';
 import { AssignUserDTO } from '../dtos/assignUser.dto';
 import { UserInTabService } from '../services/userInTab.service';
 import { UpdateRoleUserDTO } from '../dtos/updateRoleUser.dto';
+import { FileContentResult } from 'src/common/models/file/fileContentResult.dto';
+import { exportExcelFile } from 'src/utils/exportFile';
 
 @Controller('user')
 export class UserController {
@@ -386,6 +388,31 @@ export class UserController {
 
       await this.userInTabService.updateRoleUser(data);
       result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/export')
+  @UseGuards(PermissionGuard(UserPerm.ExportUser.permission))
+  async exportUser(@Req() request: RequestWithUser) {
+    const user = request.user;
+    let dataExport = null;
+    const mimetype =
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const result = new ReturnResult<FileContentResult>();
+
+    try {
+      if (user.role === 'ADMIN') {
+        dataExport = await this.userService.exportAllUser();
+      } else {
+        const _ = await this.groupService.getSocialGroupByManagerId(user.id);
+        dataExport = await this.userService.exportUserInGroup(_.id);
+      }
+
+      const fileBuffer = exportExcelFile(dataExport, 'USER');
+      result.result = new FileContentResult(fileBuffer, mimetype);
     } catch (error) {
       result.message = error.message;
     }

@@ -402,6 +402,42 @@ export class UserService {
     console.log(result.result);
   }
 
+  async exportAllUser() {
+    const listUser = await this.prismaService.user.findMany({
+      where: { deleteAt: false },
+      include: { role: true },
+    });
+    return listUser.map((user) => {
+      const dataUser = excludeData(user, excludeUsers);
+      const data = {
+        ...dataUser,
+        roleName: dataUser.role.roleName,
+      };
+      delete data['role'];
+      return data;
+    });
+  }
+
+  async exportUserInGroup(groupId: string) {
+    const listUser = await this.prismaService.userInGroup.findMany({
+      where: { delete: false, groupId: groupId },
+      include: {
+        user: {
+          include: { role: true },
+        },
+      },
+    });
+    return listUser.map((userData) => {
+      const dataUser = excludeData(userData.user, excludeUsers);
+      const data = {
+        ...dataUser,
+        roleName: dataUser.role.roleName,
+      };
+      delete data['role'];
+      return data;
+    });
+  }
+
   private checkData(data: ImportEmployeeDTO) {
     const email = data.email;
     const password = data.password;
