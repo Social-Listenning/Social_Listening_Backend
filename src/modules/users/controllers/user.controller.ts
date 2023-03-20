@@ -30,6 +30,7 @@ import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { EditEmployeeDTO } from '../dtos/editEmployee.dto';
 import { AssignUserDTO } from '../dtos/assignUser.dto';
 import { UserInTabService } from '../services/userInTab.service';
+import { UpdateRoleUserDTO } from '../dtos/updateRoleUser.dto';
 
 @Controller('user')
 export class UserController {
@@ -362,6 +363,28 @@ export class UserController {
       if (!group) throw new Error(`You don't have permission to assign users`);
 
       await this.userInTabService.assignUsers(data);
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/role/update')
+  @UseGuards(PermissionGuard(UserPerm.UpdateUser.permission))
+  async updateRoleUser(
+    @Req() request: RequestWithUser,
+    @Body() data: UpdateRoleUserDTO,
+  ) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+    try {
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (!group) throw new Error(`You don't have permission to assign user`);
+
+      if (user.id === data.userId) throw new Error(`You cannot edit your role`);
+
+      await this.userInTabService.updateRoleUser(data);
       result.result = true;
     } catch (error) {
       result.message = error.message;
