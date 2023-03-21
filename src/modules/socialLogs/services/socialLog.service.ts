@@ -23,6 +23,23 @@ export class SocialLogService {
     this.pushSocialLog(socialLogData, socialLogData.tabId);
   }
 
+  async getSocialLogByTabId(page) {
+    const listNotification = await this.prismaService.socialTabLog.findMany({
+      where: page.filter,
+      orderBy: page.orders,
+      skip: (page.pageNumber - 1) * page.size + page.offset,
+      take: page.size,
+    });
+
+    return listNotification;
+  }
+
+  async countLog(page) {
+    return await this.prismaService.socialTabLog.count({
+      where: page.filter,
+    });
+  }
+
   private async pushSocialLog(socialLog: SocialLogModel, roomId: string) {
     this.server.sockets.to(roomId).emit('sendSocialLog', socialLog);
   }
