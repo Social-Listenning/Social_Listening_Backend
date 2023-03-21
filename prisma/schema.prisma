@@ -103,15 +103,16 @@ model SocialGroup {
 }
 
 model SocialTab {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
   name          String
-  group         SocialGroup   @relation(fields: [groupId], references: [id])
+  group         SocialGroup    @relation(fields: [groupId], references: [id])
   groupId       String
-  delete        Boolean       @default(false)
+  delete        Boolean        @default(false)
   extendData    String?
   UserInTab     UserInTab[]
-  SocialNetwork SocialNetwork @relation(fields: [socialId], references: [id])
-  socialId      String        @unique
+  SocialNetwork SocialNetwork  @relation(fields: [socialId], references: [id])
+  socialId      String         @unique
+  SocialTabLog  SocialTabLog[]
 }
 
 model SocialNetwork {
@@ -179,4 +180,15 @@ model Notification {
 model SocketConnection {
   userId      String @id
   socketToken String
+}
+
+model SocialTabLog {
+  id         Int       @id @default(autoincrement())
+  tab        SocialTab @relation(fields: [tabId], references: [id])
+  tabId      String
+  title      String
+  body       String
+  activity   String
+  extendData String?
+  createAt   DateTime  @default(now())
 }

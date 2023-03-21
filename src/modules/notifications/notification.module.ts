@@ -7,12 +7,14 @@ import { SocketModule } from '../sockets/socket.module';
 import { QueueModule } from '../queue/queue.module';
 import { PrismaModule } from 'src/config/database/database.config.module';
 import { NotificationController } from './controllers/notification.controller';
+import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 
 @Module({
   imports: [
     SocketModule,
     SettingModule,
     PrismaModule,
+    SocialGroupModule,
     forwardRef(() => QueueModule),
     forwardRef(() => AuthModule),
   ],

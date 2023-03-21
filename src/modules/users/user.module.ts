@@ -11,6 +11,7 @@ import { SettingModule } from '../setting/setting.module';
 import { QueueModule } from '../queue/queue.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { UserInTabService } from './services/userInTab.service';
+import { SocialLogModule } from '../socialLogs/socialLog.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserInTabService } from './services/userInTab.service';
     SettingModule,
     FileModule,
     NotificationModule,
+    SocialLogModule,
     forwardRef(() => QueueModule),
   ],
   controllers: [UserController],
