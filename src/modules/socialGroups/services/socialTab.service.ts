@@ -23,4 +23,10 @@ export class SocialTabService {
       return excludeData(dataReturn, ['delete']);
     });
   }
+
+  async getTabById(tabId: string) {
+    return await this.prismaService.socialTab.findFirst({
+      where: { id: tabId },
+    });
+  }
 }

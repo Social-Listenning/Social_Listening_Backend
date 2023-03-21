@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { NotificationService } from '../services/notification.service';
 import { SocketService } from 'src/modules/sockets/services/socket.service';
+import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.service';
 
 @WebSocketGateway()
 export class NotificationGateway
@@ -21,8 +22,9 @@ export class NotificationGateway
   server: Server;
 
   constructor(
-    private readonly notificationService: NotificationService,
     private readonly connectStore: SocketService,
+    private readonly socialTabService: SocialTabService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async handleConnection(socket: Socket) {
@@ -30,6 +32,13 @@ export class NotificationGateway
     if (userId === 'Invalid credentials') socket.disconnect();
     else {
       const socketToken = socket.id;
+
+      const listTabs = await this.socialTabService.getAllSocialTab(userId);
+      listTabs.map((tab) => {
+        socket.join(tab.id);
+        this.logger.log(`User with id: ${userId} join room with id: ${tab.id}`);
+      });
+
       await this.connectStore.connect({
         userId: userId,
         socketToken: socketToken,
