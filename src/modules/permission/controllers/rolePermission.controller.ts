@@ -1,6 +1,9 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { RolePermissionService } from '../services/rolePermission.service';
-import { RolePermissionDTO } from '../dtos/rolePermission.dto';
+import {
+  RemoveRolePermissionDTO,
+  RolePermissionDTO,
+} from '../dtos/rolePermission.dto';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { formatString } from 'src/utils/formatString';
@@ -71,20 +74,26 @@ export class PermissionController {
   ): Promise<ReturnResult<boolean>> {
     const result = new ReturnResult<boolean>();
     try {
-      const { roleId, permissionId } = data;
-      const existingRolePermission =
-        await this.rolePermissionService.getRolePermission(
-          roleId,
-          permissionId,
-        );
+      const { roleId, listPermission } = data;
+      Promise.all(
+        listPermission.map(async (permissionId) => {
+          try {
+            const existingRolePermission =
+              await this.rolePermissionService.getRolePermission(
+                roleId,
+                permissionId,
+              );
 
-      if (!existingRolePermission) {
-        await this.rolePermissionService.assignPermissionToRole(
-          roleId,
-          permissionId,
-        );
-        result.result = true;
-      } else throw new Error();
+            if (!existingRolePermission) {
+              await this.rolePermissionService.assignPermissionToRole(
+                roleId,
+                permissionId,
+              );
+            }
+          } catch (error) {}
+        }),
+      );
+      result.result = true;
     } catch (error) {
       result.message = formatString(ResponseMessage.MESSAGE_ITEM_EXIST, [
         'RolePermission',
@@ -95,7 +104,7 @@ export class PermissionController {
 
   @Post('remove')
   @UseGuards(PermissionGuard(PermissionPerm.RemovePermission.permission))
-  async removePermission(@Body() data: RolePermissionDTO) {
+  async removePermission(@Body() data: RemoveRolePermissionDTO) {
     const result = new ReturnResult<boolean>();
     try {
       const { roleId, permissionId } = data;
