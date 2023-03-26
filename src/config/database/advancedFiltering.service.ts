@@ -28,13 +28,19 @@ export class AdvancedFilteringService {
       const orArray = { OR: [] };
       filter.value = filter.value.filter((x) => x !== undefined && x !== null);
       filter.value.forEach((value) => {
-        const queryString = this.getQuery(filter.filterOperator, value);
+        const queryString = {
+          ...this.getQuery(filter.filterOperator, value),
+          mode: 'insensitive',
+        };
         const query = this.buildQuery(props, queryString);
         orArray.OR.push(query);
       });
       return filter.value.length > 0 ? orArray : {};
     } else {
-      const queryString = this.getQuery(filter.filterOperator, filter.value);
+      const queryString = {
+        ...this.getQuery(filter.filterOperator, filter.value),
+        mode: 'insensitive',
+      };
       return this.buildQuery(props, queryString);
     }
   }
