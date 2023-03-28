@@ -78,6 +78,21 @@ export class AppService implements OnModuleInit {
         key: 'UPLOADED_FILE_DESTINATION',
         value: './upload',
       },
+      {
+        group: 'CONNECTOR',
+        key: 'FACEBOOK_APP_ID',
+        value: '',
+      },
+      {
+        group: 'CONNECTOR',
+        key: 'FACEBOOK_APP_VERSION',
+        value: '',
+      },
+      {
+        group: 'CONNECTOR',
+        key: 'FACEBOOK_APP_CONFIG_ID',
+        value: '',
+      },
     ];
     this.listPermission = [
       ...ConvertObjectToArray(UserPerm).map((permission) =>
