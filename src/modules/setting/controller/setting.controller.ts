@@ -1,13 +1,23 @@
-import { Body, Controller, Get, NotFoundException, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { SettingService } from '../service/setting.service';
 import { QuerySettingDTO } from '../dto/querySetting.dto';
 import { UpdateSettingDTO } from '../dto/updateSetting.dto';
+import { SettingPerm } from '../enum/permission.enum';
+import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 
 @Controller('setting')
 export class SettingController {
   constructor(private readonly settingService: SettingService) {}
 
   @Get('getAllSetting')
+  @UseGuards(PermissionGuard(SettingPerm.GetAllSetting.permission))
   async getAllSetting() {
     return await this.settingService.getAllSetting();
   }
@@ -27,7 +37,8 @@ export class SettingController {
     return setting;
   }
 
-  @Put('editSetting')
+  @Put('update-setting')
+  @UseGuards(PermissionGuard(SettingPerm.UpdateSetting.permission))
   async updateSetting(@Body() updateSettingData: UpdateSettingDTO) {
     const setting = await this.settingService.getSettingByKeyAndGroup(
       updateSettingData.key,
