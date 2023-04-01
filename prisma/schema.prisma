@@ -108,6 +108,7 @@ model SocialTab {
   group         SocialGroup    @relation(fields: [groupId], references: [id])
   groupId       String
   delete        Boolean        @default(false)
+  isWorked      Boolean        @default(false)
   extendData    String?
   UserInTab     UserInTab[]
   SocialNetwork SocialNetwork  @relation(fields: [socialId], references: [id])

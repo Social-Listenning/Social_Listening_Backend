@@ -28,7 +28,7 @@ export class UserInTabService {
   }
 
   async addUserToTab(userId: string, tabId: string, roleId: string) {
-    const tab = await this.socialTabService.getTabById(tabId);
+    const tab = await this.socialTabService.getSocialTabById(tabId);
     const user = await this.userService.getUserById(userId);
 
     const dataCreated = await this.prismaService.userInTab.create({
@@ -65,7 +65,7 @@ export class UserInTabService {
 
     Promise.all(
       listTab.map(async (tabId) => {
-        const tab = await this.socialTabService.getTabById(tabId);
+        const tab = await this.socialTabService.getSocialTabById(tabId);
         fakeDB[tabId] = tab;
       }),
     );
