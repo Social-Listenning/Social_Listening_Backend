@@ -8,7 +8,13 @@ export class SocialTabService {
 
   async getAllSocialTab(userId: string) {
     const listTab = await this.prismaService.userInTab.findMany({
-      where: { userId: userId, delete: false },
+      where: {
+        userId: userId,
+        delete: false,
+        socialTab: {
+          delete: false,
+        },
+      },
       include: {
         socialTab: {
           include: {
@@ -24,9 +30,23 @@ export class SocialTabService {
     });
   }
 
-  async getTabById(tabId: string) {
+  async getSocialTabById(tabId: string) {
     return await this.prismaService.socialTab.findFirst({
       where: { id: tabId },
+    });
+  }
+
+  async updateWorkingStateById(tabId: string, state: boolean) {
+    return await this.prismaService.socialTab.update({
+      where: { id: tabId },
+      data: { isWorked: state },
+    });
+  }
+
+  async removeTabById(tabId: string) {
+    return await this.prismaService.socialTab.update({
+      where: { id: tabId },
+      data: { delete: true },
     });
   }
 }

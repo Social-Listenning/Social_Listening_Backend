@@ -14,6 +14,7 @@ import { PermissionPerm } from './modules/permission/enum/permission.enum';
 import { UserPerm } from './modules/users/enum/permission.enum';
 import { SocialNetworkPerm } from './modules/socialNetworks/enum/permission.enum';
 import { SettingPerm } from './modules/setting/enum/permission.enum';
+import { SocialTabPerm } from './modules/socialGroups/enum/permission.enum';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -109,6 +110,9 @@ export class AppService implements OnModuleInit {
         toDTO(permission, CreatePermissionDTO),
       ),
       ...ConvertObjectToArray(SettingPerm).map((permission) =>
+        toDTO(permission, CreatePermissionDTO),
+      ),
+      ...ConvertObjectToArray(SocialTabPerm).map((permission) =>
         toDTO(permission, CreatePermissionDTO),
       ),
     ];
