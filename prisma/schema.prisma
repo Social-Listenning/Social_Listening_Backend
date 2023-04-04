@@ -114,6 +114,7 @@ model SocialTab {
   SocialNetwork SocialNetwork  @relation(fields: [socialId], references: [id])
   socialId      String         @unique
   SocialTabLog  SocialTabLog[]
+  SocialPost    SocialPost[]
 }
 
 model SocialNetwork {
@@ -192,4 +193,24 @@ model SocialTabLog {
   activity   String
   extendData String?
   createAt   DateTime  @default(now())
+}
+
+model SocialPost {
+  id           String    @id @default(uuid())
+  socialTab    SocialTab @relation(fields: [tabId], references: [id])
+  tabId        String
+  postId       String
+  message      String
+  permalinkUrl String
+  createdAt    DateTime
+}
+
+model SocialMessage {
+  id        String   @id @default(uuid())
+  message   String
+  sender    String
+  createdAt DateTime
+  type      String
+  messageId String
+  parentId  String
 }

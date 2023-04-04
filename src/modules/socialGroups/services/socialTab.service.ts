@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, forwardRef, Inject } from '@nestjs/common';
 import { PrismaService } from 'src/config/database/database.config.service';
+import { SocialNetworkService } from 'src/modules/socialNetworks/services/socialNetwork.service';
 import { excludeData } from 'src/utils/excludeData';
 
 @Injectable()
 export class SocialTabService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    @Inject(forwardRef(() => SocialNetworkService))
+    private readonly socialNetworkService: SocialNetworkService,
+  ) {}
 
   async getAllSocialTab(userId: string) {
     const listTab = await this.prismaService.userInTab.findMany({
@@ -48,5 +53,19 @@ export class SocialTabService {
       where: { id: tabId },
       data: { delete: true },
     });
+  }
+
+  async getTabByNetworkId(networkId: string) {
+    const socialTab = await this.prismaService.socialTab.findFirst({
+      where: {
+        SocialNetwork: {
+          extendData: {
+            contains: `"id":"${networkId}"`,
+          },
+        },
+      },
+    });
+
+    return socialTab;
   }
 }
