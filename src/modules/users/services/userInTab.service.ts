@@ -126,6 +126,13 @@ export class UserInTabService {
     });
   }
 
+  async checkUserInTab(userId: string, tabId: string) {
+    const userInTab = await this.prismaService.userInTab.findFirst({
+      where: { tabId: tabId, userId: userId },
+    });
+    return userInTab;
+  }
+
   private async getManagerOfTab(tabId: string) {
     const user = await this.prismaService.userInTab.findFirst({
       where: { tabId: tabId, roleId: this.managerRole.id, delete: false },

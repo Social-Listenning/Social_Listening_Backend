@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { SocialMessageService } from '../services/socialMessage.service';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 import {
@@ -10,13 +10,21 @@ import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.se
 import { WorkingState } from 'src/common/enum/workingState.enum';
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { SocialPostService } from '../services/socialPost.service';
+import { JWTAuthGuard } from 'src/modules/auth/guards/jwtAuth.guard';
+import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
+import { SocialMessagePage } from '../dtos/SocialMessagePage.dto';
+import { UserInTabService } from 'src/modules/users/services/userInTab.service';
+import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
+import { PagedData } from 'src/common/models/paging/pagedData.dto';
 
 @Controller('social-message')
 export class SocialMessageController {
   constructor(
+    private advancedFilteringService: AdvancedFilteringService,
     private socialMessageService: SocialMessageService,
     private socialPostService: SocialPostService,
     private socialTabService: SocialTabService,
+    private userInTabService: UserInTabService,
   ) {}
 
   @Post('save')
@@ -59,6 +67,37 @@ export class SocialMessageController {
       );
 
       result.result = savedMessage;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/:id')
+  @UseGuards(JWTAuthGuard)
+  async getAllMessage(
+    @Req() request: RequestWithUser,
+    @Body() page: SocialMessagePage,
+    @Param('id') tabId: string,
+  ) {
+    const user = request.user;
+    const pagedData = new PagedData<object>(page);
+    const result = new ReturnResult<PagedData<object>>();
+
+    try {
+      const exist = await this.userInTabService.checkUserInTab(user.id, tabId);
+      if (!exist) throw new Error(`You are not allowed to access this page`);
+
+      const postIds = await this.socialPostService.getAllPostIds();
+      const data = this.advancedFilteringService.createFilter(page);
+
+      data.filter.AND.push({ parentId: { in: postIds } });
+
+      const listResult = await this.socialMessageService.findComment(data);
+      pagedData.page.totalElement =
+        await this.socialMessageService.countComment(data);
+      pagedData.data = listResult;
+      result.result = pagedData;
     } catch (error) {
       result.message = error.message;
     }

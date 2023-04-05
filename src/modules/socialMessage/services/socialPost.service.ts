@@ -19,4 +19,11 @@ export class SocialPostService {
     });
     return savedMessage;
   }
+
+  async getAllPostIds() {
+    const allPostIds = await this.prismaService.socialPost.findMany({
+      select: { id: true },
+    });
+    return allPostIds.map((post) => post.id);
+  }
 }

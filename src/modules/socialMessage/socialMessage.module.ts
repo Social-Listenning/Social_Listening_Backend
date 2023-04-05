@@ -4,9 +4,10 @@ import { SocialMessageService } from './services/socialMessage.service';
 import { SocialMessageController } from './controllers/socialMessage.controller';
 import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 import { SocialPostService } from './services/socialPost.service';
+import { UserModule } from '../users/user.module';
 
 @Module({
-  imports: [PrismaModule, SocialGroupModule],
+  imports: [PrismaModule, SocialGroupModule, UserModule],
   controllers: [SocialMessageController],
   providers: [SocialMessageService, SocialPostService],
   exports: [SocialMessageService, SocialPostService],
