@@ -12,6 +12,7 @@ import { SocialGroupModule } from './modules/socialGroups/socialGroup.module';
 import { FileModule } from './modules/files/file.module';
 import { NotificationModule } from './modules/notifications/notification.module';
 import { SocialNetworkModule } from './modules/socialNetworks/socialNetwork.module';
+import { SocialMessageModule } from './modules/socialMessage/socialMessage.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SocialNetworkModule } from './modules/socialNetworks/socialNetwork.modu
     FileModule,
     NotificationModule,
     SocialNetworkModule,
+    SocialMessageModule,
   ],
   controllers: [],
   providers: [AppService],

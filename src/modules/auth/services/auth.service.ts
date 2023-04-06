@@ -246,6 +246,19 @@ export class AuthService {
     }
   }
 
+  async validateAPIKey(apiKey: string) {
+    const APIKey = await this.settingService.getSettingByKeyAndGroup(
+      'APIKEY',
+      'AUTH',
+    );
+    if (!APIKey?.value || (APIKey?.value && APIKey.value.length === 0)) {
+      return null;
+    } else {
+      const listAPIKey = APIKey.value.split(',');
+      return listAPIKey.find((key) => apiKey === key);
+    }
+  }
+
   private async sendRecoveyPasswordLink(user: User) {
     const payload: RecoveryPasswordPayload = { id: user.id };
     const tokenSecretSetting =

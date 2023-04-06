@@ -95,6 +95,11 @@ export class AppService implements OnModuleInit {
         key: 'FACEBOOK_APP_CONFIG_ID',
         value: '',
       },
+      {
+        group: 'AUTH',
+        key: 'APIKEY',
+        value: '',
+      },
     ];
     this.listPermission = [
       ...ConvertObjectToArray(UserPerm).map((permission) =>

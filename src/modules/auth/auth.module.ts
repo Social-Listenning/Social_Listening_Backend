@@ -13,6 +13,7 @@ import { JwtRefreshStrategy } from './guards/refresh.stategy';
 import { TokenModule } from '../token/token.module';
 import { LogModule } from '../activityLogs/log.module';
 import { SocialGroupModule } from '../socialGroups/socialGroup.module';
+import { APIKeyStrategy } from './guards/apiKey.strategy';
 
 @Module({
   imports: [
@@ -49,7 +50,13 @@ import { SocialGroupModule } from '../socialGroups/socialGroup.module';
     }),
     SocialGroupModule,
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    APIKeyStrategy,
+  ],
   controllers: [AuthController],
   exports: [AuthService],
 })
