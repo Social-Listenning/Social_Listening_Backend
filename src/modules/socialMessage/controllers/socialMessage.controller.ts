@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { SocialMessageService } from '../services/socialMessage.service';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 import {
@@ -16,6 +24,7 @@ import { SocialMessagePage } from '../dtos/SocialMessagePage.dto';
 import { UserInTabService } from 'src/modules/users/services/userInTab.service';
 import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
 import { PagedData } from 'src/common/models/paging/pagedData.dto';
+import { SocialPostWithMessage } from '../dtos/socialPostWithMessage.dto';
 
 @Controller('social-message')
 export class SocialMessageController {
@@ -73,12 +82,12 @@ export class SocialMessageController {
     return result;
   }
 
-  @Post('/:id')
+  @Post('/:tabId')
   @UseGuards(JWTAuthGuard)
   async getAllMessage(
     @Req() request: RequestWithUser,
     @Body() page: SocialMessagePage,
-    @Param('id') tabId: string,
+    @Param('tabId') tabId: string,
   ) {
     const user = request.user;
     const pagedData = new PagedData<object>(page);
@@ -88,16 +97,40 @@ export class SocialMessageController {
       const exist = await this.userInTabService.checkUserInTab(user.id, tabId);
       if (!exist) throw new Error(`You are not allowed to access this page`);
 
-      const postIds = await this.socialPostService.getAllPostIds();
       const data = this.advancedFilteringService.createFilter(page);
-
-      data.filter.AND.push({ parentId: { in: postIds } });
-
-      const listResult = await this.socialMessageService.findComment(data);
+      data.filter.AND.push({ type: { not: { equals: 'Bot' } } });
+      const listResult = await this.socialMessageService.getCommentPage(data);
       pagedData.page.totalElement =
         await this.socialMessageService.countComment(data);
       pagedData.data = listResult;
       result.result = pagedData;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Get('/:socialMessageId')
+  @UseGuards(JWTAuthGuard)
+  async getAllMessageWithId(
+    @Req() request: RequestWithUser,
+    @Param('socialMessageId') messageId: string,
+  ) {
+    const result = new ReturnResult<SocialPostWithMessage>();
+    const postWithMessage = new SocialPostWithMessage();
+    try {
+      const rootMessage = await this.socialMessageService.getRootMessage(
+        messageId,
+      );
+      const socialPost = await this.socialPostService.getSocialPostById(
+        rootMessage.parentId,
+      );
+      postWithMessage.post = socialPost;
+      postWithMessage.message =
+        await this.socialMessageService.getAllConversation(
+          rootMessage.messageId,
+        );
+      result.result = postWithMessage;
     } catch (error) {
       result.message = error.message;
     }
