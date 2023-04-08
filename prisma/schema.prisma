@@ -213,4 +213,5 @@ model SocialMessage {
   type      String
   messageId String
   parentId  String
+  sentiment Float?
 }

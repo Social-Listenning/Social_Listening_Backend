@@ -154,6 +154,7 @@ export class SocialMessageController {
       ...message,
       createdAt: new Date(message.createdAt),
       messageId: message.commentId,
+      sentiment: message.sentiment,
       parentId: message.parentId === message.postId ? postId : message.parentId,
     };
 

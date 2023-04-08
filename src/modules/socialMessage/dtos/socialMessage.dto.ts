@@ -5,6 +5,7 @@ export class CreateSocialMessageDTO {
   createdAt: Date;
   type: string;
   parent: SocialPostDTO;
+  sentiment?: number;
 }
 
 export class SocialMessageDTO {
@@ -14,6 +15,7 @@ export class SocialMessageDTO {
   createdAt: Date;
   parentId: string;
   messageId: string;
+  sentiment?: number;
 }
 
 export class SocialPostDTO {
