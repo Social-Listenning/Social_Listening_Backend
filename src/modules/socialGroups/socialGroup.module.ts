@@ -5,9 +5,14 @@ import { SocialGroupController } from './controllers/socialGroup.controller';
 import { SocialTabService } from './services/socialTab.service';
 import { SocialTabController } from './controllers/socialTab.controller';
 import { SocialNetworkModule } from '../socialNetworks/socialNetwork.module';
+import { SocialSettingModule } from '../socialSetting/socialSetting.module';
 
 @Module({
-  imports: [PrismaModule, forwardRef(() => SocialNetworkModule)],
+  imports: [
+    PrismaModule,
+    forwardRef(() => SocialNetworkModule),
+    SocialSettingModule,
+  ],
   controllers: [SocialGroupController, SocialTabController],
   providers: [SocialGroupService, SocialTabService],
   exports: [SocialGroupService, SocialTabService],
