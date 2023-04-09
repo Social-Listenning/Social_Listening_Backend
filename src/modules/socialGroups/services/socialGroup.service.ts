@@ -5,10 +5,19 @@ import {
   EditSocialGroupDTO,
 } from '../dtos/socialGroup.dto';
 import { SocialTabDTO } from '../dtos/socialTab.dto';
+import { defaultSetting } from 'src/modules/socialSetting/enum/defaultSetting.enum';
+import { SocialSettingService } from 'src/modules/socialSetting/services/socialSetting.service';
+import { SocialSettingDTO } from 'src/modules/socialSetting/dtos/socialSetting.dto';
 
 @Injectable()
 export class SocialGroupService {
-  constructor(private readonly prismaService: PrismaService) {}
+  listSetting;
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly socialSettingService: SocialSettingService,
+  ) {
+    this.listSetting = defaultSetting;
+  }
 
   async createSocailGroup(data: CreateSocialGroupDTO) {
     const newSocialGroup = await this.prismaService.socialGroup.create({
@@ -54,6 +63,7 @@ export class SocialGroupService {
         name: data.name,
       },
     });
+    this.addSettingToTab(newTab.id);
     return newTab;
   }
 
@@ -62,5 +72,18 @@ export class SocialGroupService {
       where: { userId: userId, delete: false },
     });
     return userInGroup && userInGroup.isActive ? true : false;
+  }
+
+  private async addSettingToTab(tabId: string) {
+    await Promise.all(
+      this.listSetting.map(async (setting) => {
+        const createdData = new SocialSettingDTO();
+        createdData.tabId = tabId;
+        createdData.group = setting.group;
+        createdData.key = setting.key;
+        createdData.value = setting.value;
+        await this.socialSettingService.createSocialSetting(createdData);
+      }),
+    );
   }
 }
