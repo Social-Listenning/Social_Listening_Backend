@@ -8,7 +8,7 @@ import { SocialSetting } from '../models/socialSetting.model';
 
 @Controller('socialTabSeting')
 export class SocialSettingController {
-  constructor(private readonly socialSettingService: SocialSettingService) {}
+  constructor(private readonly socialSettingService: SocialSettingService) { }
 
   @Get('/:tabId')
   @UseGuards(PermissionGuard(SocialSettingPerm.GetAllSocialSetting.permission))
@@ -26,7 +26,7 @@ export class SocialSettingController {
   @Put('/:id/update')
   @UseGuards(PermissionGuard(SocialSettingPerm.UpdateSocialSetting.permission))
   async updateSetting(
-    @Param() id: number,
+    @Param() { id },
     @Body() socialSetting: SocialSettingDTO,
   ) {
     const result = new ReturnResult<object>();
@@ -39,7 +39,7 @@ export class SocialSettingController {
       if (!existed) throw new Error(`Can not update the social setting`);
 
       const setting = await this.socialSettingService.updateSocicalSetting(
-        id,
+        Number.parseInt(id),
         socialSetting,
       );
       result.result = setting;
