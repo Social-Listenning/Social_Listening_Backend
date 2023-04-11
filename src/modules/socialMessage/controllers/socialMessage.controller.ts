@@ -61,7 +61,6 @@ export class SocialMessageController {
           );
         }
       } else {
-        console.log(post);
         const existedPost = await this.socialPostService.findPost(post.postId);
         if (existedPost) savedPost = existedPost;
         else {
@@ -98,7 +97,13 @@ export class SocialMessageController {
       if (!exist) throw new Error(`You are not allowed to access this page`);
 
       const data = this.advancedFilteringService.createFilter(page);
-      data.filter.AND.push({ type: { not: { equals: 'Bot' } } });
+      data.filter.AND.push({
+        AND: [
+          { type: { not: { equals: 'Bot' } } },
+          { type: { not: { startsWith: 'Agent' } } },
+        ],
+      });
+      data.orders.push({ createdAt: 'desc' });
       const listResult = await this.socialMessageService.getCommentPage(data);
       pagedData.page.totalElement =
         await this.socialMessageService.countComment(data);

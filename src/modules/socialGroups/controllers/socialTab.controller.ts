@@ -25,7 +25,7 @@ export class SocialTabController {
   async getTabWorkingState(@Param('id') id: string) {
     const result = new ReturnResult<boolean>();
     try {
-      const socialTab = await this.socialTabService.getSocialTabById(id);
+      const socialTab = await this.socialTabService.getTabByNetworkId(id);
       result.result = socialTab.isWorked === WorkingState.Working;
     } catch (error) {
       result.message = error.message;
