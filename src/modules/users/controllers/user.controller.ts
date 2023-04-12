@@ -144,7 +144,7 @@ export class UserController {
         const group = await this.groupService.getSocialGroupByManagerId(
           user.id,
         );
-        if (group.managerId === user.id)
+        if (group.managerId === userExist.id)
           throw new Error(`Can not remove yourself from group`);
 
         await this.userInGroupService.removeUserFromGroup(
