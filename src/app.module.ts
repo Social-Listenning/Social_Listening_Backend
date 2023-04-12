@@ -14,6 +14,7 @@ import { NotificationModule } from './modules/notifications/notification.module'
 import { SocialNetworkModule } from './modules/socialNetworks/socialNetwork.module';
 import { SocialMessageModule } from './modules/socialMessage/socialMessage.module';
 import { SocialSettingModule } from './modules/socialSetting/socialSetting.module';
+import { SocialPostModule } from './modules/socialPosts/socialPost.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SocialSettingModule } from './modules/socialSetting/socialSetting.modul
     SocialNetworkModule,
     SocialMessageModule,
     SocialSettingModule,
+    SocialPostModule,
   ],
   controllers: [],
   providers: [AppService],
