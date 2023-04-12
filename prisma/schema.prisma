@@ -103,18 +103,18 @@ model SocialGroup {
 }
 
 model SocialTab {
-  id                String              @id @default(uuid())
-  name              String
-  group             SocialGroup         @relation(fields: [groupId], references: [id])
-  groupId           String
-  delete            Boolean             @default(false)
-  isWorked          Boolean             @default(false)
-  extendData        String?
-  UserInTab         UserInTab[]
-  SocialNetwork     SocialNetwork       @relation(fields: [socialId], references: [id])
-  socialId          String              @unique
-  SocialTabLog      SocialTabLog[]
-  SocialPost        SocialPost[]
+  id               String             @id @default(uuid())
+  name             String
+  group            SocialGroup        @relation(fields: [groupId], references: [id])
+  groupId          String
+  delete           Boolean            @default(false)
+  isWorked         Boolean            @default(false)
+  extendData       String?
+  UserInTab        UserInTab[]
+  SocialNetwork    SocialNetwork      @relation(fields: [socialId], references: [id])
+  socialId         String             @unique
+  SocialTabLog     SocialTabLog[]
+  SocialPost       SocialPost[]
   SocialTabSetting SocialTabSetting[]
 }
 
@@ -204,6 +204,8 @@ model SocialPost {
   message      String
   permalinkUrl String
   createdAt    DateTime
+
+  @@index([tabId])
 }
 
 model SocialMessage {
@@ -215,6 +217,10 @@ model SocialMessage {
   messageId String
   parentId  String
   sentiment Float?
+  isRead    Boolean  @default(false)
+
+  @@index([isRead])
+  @@index([parentId])
 }
 
 model SocialTabSetting {
