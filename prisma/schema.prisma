@@ -115,7 +115,7 @@ model SocialTab {
   socialId          String              @unique
   SocialTabLog      SocialTabLog[]
   SocialPost        SocialPost[]
-  SocialTabSettingg SocialTabSettingg[]
+  SocialTabSetting SocialTabSetting[]
 }
 
 model SocialNetwork {
@@ -217,7 +217,7 @@ model SocialMessage {
   sentiment Float?
 }
 
-model SocialTabSettingg {
+model SocialTabSetting {
   id        Int       @id @default(autoincrement())
   socialTab SocialTab @relation(fields: [tabId], references: [id])
   tabId     String

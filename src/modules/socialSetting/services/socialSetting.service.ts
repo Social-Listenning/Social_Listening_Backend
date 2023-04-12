@@ -7,14 +7,14 @@ export class SocialSettingService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createSocialSetting(socialSetting: SocialSettingDTO) {
-    const setting = await this.prismaService.socialTabSettingg.create({
+    const setting = await this.prismaService.socialTabSetting.create({
       data: socialSetting,
     });
     return setting;
   }
 
   async findSocialSetting(tabId: string, groupId: string, keyId: string) {
-    const setting = await this.prismaService.socialTabSettingg.findFirst({
+    const setting = await this.prismaService.socialTabSetting.findFirst({
       where: {
         tabId: tabId,
         group: groupId,
@@ -25,14 +25,14 @@ export class SocialSettingService {
   }
 
   async getSocialSetting(tabId: string) {
-    const setting = await this.prismaService.socialTabSettingg.findMany({
+    const setting = await this.prismaService.socialTabSetting.findMany({
       where: { tabId: tabId },
     });
     return setting;
   }
 
   async updateSocicalSetting(settingId: number, setting: SocialSettingDTO) {
-    const updatedSetting = await this.prismaService.socialTabSettingg.update({
+    const updatedSetting = await this.prismaService.socialTabSetting.update({
       data: setting,
       where: { id: settingId },
     });
