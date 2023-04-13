@@ -25,6 +25,7 @@ import { UserInTabService } from 'src/modules/users/services/userInTab.service';
 import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
 import { PagedData } from 'src/common/models/paging/pagedData.dto';
 import { SocialPostWithMessage } from '../dtos/socialPostWithMessage.dto';
+import { SocialMessageGateway } from '../gateways/socialMessage.gateway';
 
 @Controller('social-message')
 export class SocialMessageController {
@@ -34,6 +35,7 @@ export class SocialMessageController {
     private socialPostService: SocialPostService,
     private socialTabService: SocialTabService,
     private userInTabService: UserInTabService,
+    private socialMessageGateway: SocialMessageGateway,
   ) {}
 
   @Post('save')
@@ -73,6 +75,9 @@ export class SocialMessageController {
       const savedMessage = await this.socialMessageService.saveMessage(
         this.remakeMessageData(message, savedPost.id),
       );
+      if (savedMessage.type === 'Comment') {
+        await this.socialMessageGateway.pushSocialLog(savedPost.id, tab.id);
+      }
 
       result.result = savedMessage;
     } catch (error) {
