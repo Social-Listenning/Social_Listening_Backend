@@ -11,6 +11,7 @@ export class SocialPostService {
       let listPosts = await this.prismaService.$queryRaw<PostWithInfo[]>`SELECT
           "SocialPost"."id",
           "SocialPost"."message",
+          "SocialPost"."createdAt",
           "lastMessage"."message" AS "lastMessage",
           "lastMessage"."createdAt" AS "lastMessageAt",
           COUNT ( "SocialMessage"."id" ) AS "totalComment",
