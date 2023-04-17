@@ -88,6 +88,11 @@ export class AppService implements OnModuleInit {
       },
       {
         group: 'CONNECTOR',
+        key: 'FACEBOOK_APP_SECRET',
+        value: '',
+      },
+      {
+        group: 'CONNECTOR',
         key: 'FACEBOOK_APP_VERSION',
         value: '',
       },

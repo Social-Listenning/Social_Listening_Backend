@@ -226,8 +226,8 @@ export class UserService {
 
       const userCreated: CreateUserInput = {
         email: data.email,
-        userName: data.userName,
-        fullName: data.fullName,
+        userName: data.userName ?? data.email,
+        fullName: data.fullName ?? data.email,
         password: hashedPassword,
         roleId: data.roleId,
       };

@@ -30,8 +30,9 @@ export class AdvancedFilteringService {
       filter.value.forEach((value) => {
         const queryString = {
           ...this.getQuery(filter.filterOperator, value),
-          mode: 'insensitive',
+          // mode: 'insensitive',
         };
+        if (typeof value === 'string') queryString['mode'] = 'insensitive';
         const query = this.buildQuery(props, queryString);
         orArray.OR.push(query);
       });
@@ -39,8 +40,9 @@ export class AdvancedFilteringService {
     } else {
       const queryString = {
         ...this.getQuery(filter.filterOperator, filter.value),
-        mode: 'insensitive',
+        // mode: 'insensitive',
       };
+      if (typeof filter.value === 'string') queryString['mode'] = 'insensitive';
       return this.buildQuery(props, queryString);
     }
   }

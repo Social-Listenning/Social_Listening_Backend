@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   NotFoundException,
+  Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -22,7 +23,7 @@ export class SettingController {
     return await this.settingService.getAllSetting();
   }
 
-  @Get('getSettingByKeyAndGroup')
+  @Post('getSettingByKeyAndGroup')
   async getDatailSetting(@Body() settingData: QuerySettingDTO) {
     const setting = await this.settingService.getSettingByKeyAndGroup(
       settingData.key,
