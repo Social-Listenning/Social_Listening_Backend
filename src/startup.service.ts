@@ -16,6 +16,7 @@ import { SocialNetworkPerm } from './modules/socialNetworks/enum/permission.enum
 import { SettingPerm } from './modules/setting/enum/permission.enum';
 import { SocialTabPerm } from './modules/socialGroups/enum/permission.enum';
 import { SocialSettingPerm } from './modules/socialSetting/enum/permission.enum';
+import { WorkflowPerm } from './modules/workflows/enum/permission.enum';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -26,7 +27,7 @@ export class AppService implements OnModuleInit {
   ownerId: string;
   listSetting: CreateSettingDTO[];
   listDefaultRole: CreateRoleDTO[];
-  listPermission: CreatePermissionDTO[];
+  listPermission: CreatePermissionDTO[] = [];
 
   constructor(
     private readonly roleService: RoleService,
@@ -107,29 +108,23 @@ export class AppService implements OnModuleInit {
         value: '',
       },
     ];
-    this.listPermission = [
-      ...ConvertObjectToArray(UserPerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
-      ...ConvertObjectToArray(PermissionPerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
-      ...ConvertObjectToArray(RolePerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
-      ...ConvertObjectToArray(SocialNetworkPerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
-      ...ConvertObjectToArray(SettingPerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
-      ...ConvertObjectToArray(SocialTabPerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
-      ...ConvertObjectToArray(SocialSettingPerm).map((permission) =>
-        toDTO(permission, CreatePermissionDTO),
-      ),
+    const listPerm = [
+      UserPerm,
+      PermissionPerm,
+      RolePerm,
+      SettingPerm,
+      SocialNetworkPerm,
+      SocialTabPerm,
+      SocialSettingPerm,
+      WorkflowPerm,
     ];
+
+    listPerm.forEach((perm) => {
+      const permissions = ConvertObjectToArray(perm).map((permission) =>
+        toDTO(permission, CreatePermissionDTO),
+      );
+      this.listPermission = [...this.listPermission, ...permissions];
+    });
   }
 
   async onModuleInit() {

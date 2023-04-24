@@ -15,6 +15,7 @@ import { SocialNetworkModule } from './modules/socialNetworks/socialNetwork.modu
 import { SocialMessageModule } from './modules/socialMessage/socialMessage.module';
 import { SocialSettingModule } from './modules/socialSetting/socialSetting.module';
 import { SocialPostModule } from './modules/socialPosts/socialPost.module';
+import { WorkflowModule } from './modules/workflows/workflow.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { SocialPostModule } from './modules/socialPosts/socialPost.module';
     SocialMessageModule,
     SocialSettingModule,
     SocialPostModule,
+    WorkflowModule,
   ],
   controllers: [],
   providers: [AppService],
