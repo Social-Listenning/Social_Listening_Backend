@@ -35,6 +35,7 @@ export class WorkflowPosition {
 }
 
 export class CreateWorkflowDTO {
+  id?: string;
   name: string;
   tabId: string;
   extendData?: string;
@@ -59,6 +60,7 @@ export class CreateWorkflowEdgeDTO {
 }
 
 export class CreateWorkflowVariableDTO {
+  id?: string;
   flowId: string;
   variableName: string;
   variableValue?: string;

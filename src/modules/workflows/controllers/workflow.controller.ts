@@ -79,6 +79,10 @@ export class WorkflowController {
     try {
       const user = request.user;
       const workflow = await this.workflowService.getWorkflowById(workflowId);
+      if (!workflow) {
+        throw new Error(`Workflow ${workflowId} does not exist`);
+      }
+
       const checkInTab = await this.userInTabService.checkUserInTab(
         user.id,
         workflow.tabId,
@@ -108,6 +112,10 @@ export class WorkflowController {
     try {
       const user = request.user;
       const workflow = await this.workflowService.getWorkflowById(workflowId);
+      if (!workflow) {
+        throw new Error(`Workflow ${workflowId} does not exist`);
+      }
+
       const checkInTab = await this.userInTabService.checkUserInTab(
         user.id,
         workflow.tabId,
@@ -143,6 +151,40 @@ export class WorkflowController {
 
       const newWorkflow = await this.workflowService.createWorkflow(data);
       result.result = newWorkflow;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Put('/:workflowId/update')
+  @UseGuards(PermissionGuard(WorkflowPerm.UpdateWorkflow.permission))
+  async updateWorkflow(
+    @Req() request: RequestWithUser,
+    @Param() { workflowId },
+    @Body() data: WorkflowDTO,
+  ) {
+    const result = new ReturnResult<object>();
+    try {
+      const user = request.user;
+
+      const workflow = await this.workflowService.getWorkflowById(workflowId);
+      const checkInTab = await this.userInTabService.checkUserInTab(
+        user.id,
+        data.tabId,
+      );
+      if (!checkInTab) {
+        throw new Error(`You are not allowed to view this page`);
+      }
+      if (!workflow) {
+        throw new Error(`Workflow ${workflowId} does not exist`);
+      }
+
+      const updatedWorkflow = await this.workflowService.updateWorkflow(
+        workflowId,
+        data,
+      );
+      result.result = updatedWorkflow;
     } catch (error) {
       result.message = error.message;
     }

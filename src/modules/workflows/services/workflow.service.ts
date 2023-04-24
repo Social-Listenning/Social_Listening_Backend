@@ -10,10 +10,18 @@ import {
   CreateWorkflowVariableDTO,
   WorkflowDTO,
 } from '../dtos/workflow.dto';
+import { WorkflowNodeService } from './workflowNode.service';
+import { WorkflowEdgeService } from './workflowEdge.service';
+import { WorkflowVariableService } from './workflowVariable.service';
 
 @Injectable()
 export class WorkflowService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly workflowNodeService: WorkflowNodeService,
+    private readonly workflowEdgeService: WorkflowEdgeService,
+    private readonly workflowVariableService: WorkflowVariableService,
+  ) {}
 
   async getAllWorkflow(page) {
     try {
@@ -106,7 +114,7 @@ export class WorkflowService {
         extendData: JSON.stringify(workflow.data),
       };
 
-      const workflowData = await this.createWorkflowData(createWorkflowData);
+      const workflowData = await this.saveWorkflowData(createWorkflowData);
       Promise.all([
         listNode.map(async (node) => {
           const workflowNodeData: CreateWorkflowNodeDTO = {
@@ -118,7 +126,7 @@ export class WorkflowService {
             data: JSON.stringify(node.data),
           };
 
-          await this.createWorkflowNode(workflowNodeData);
+          await this.workflowNodeService.saveWorkflowNode(workflowNodeData);
         }),
         listEdge.map(async (edge) => {
           const workflowEdgeData: CreateWorkflowEdgeDTO = {
@@ -130,14 +138,16 @@ export class WorkflowService {
             targetName: edge.targetHandle,
           };
 
-          await this.createWorkflowEdge(workflowEdgeData);
+          await this.workflowEdgeService.saveWorkflowEdge(workflowEdgeData);
         }),
         listVariable.map(async (variable) => {
           const workflowVariableData: CreateWorkflowVariableDTO = {
             flowId: workflowData.id,
             variableName: variable.label,
           };
-          await this.createWorkflowVariable(workflowVariableData);
+          await this.workflowVariableService.saveWorkflowVariable(
+            workflowVariableData,
+          );
         }),
       ]);
 
@@ -148,49 +158,78 @@ export class WorkflowService {
     }
   }
 
-  private async createWorkflowData(workflow: CreateWorkflowDTO) {
+  async updateWorkflow(workflowId: string, workflow: WorkflowDTO) {
     try {
-      const newWorkflow = await this.prismaService.workflow.create({
-        data: workflow,
+      const listNode = workflow.data.nodes;
+      const listEdge = workflow.data.edges;
+      const listVariable = workflow.data.variables;
+      const createWorkflowData: CreateWorkflowDTO = {
+        id: workflowId,
+        name: workflow.name,
+        tabId: workflow.tabId,
+        extendData: JSON.stringify(workflow.data),
+      };
+
+      const workflowData = await this.saveWorkflowData(createWorkflowData);
+      Promise.all([
+        listNode.map(async (node) => {
+          const workflowNodeData: CreateWorkflowNodeDTO = {
+            id: node.id,
+            flowId: workflowData.id,
+            type: node.type,
+            position_X: node.position.x,
+            position_Y: node.position.y,
+            data: JSON.stringify(node.data),
+          };
+
+          await this.workflowNodeService.saveWorkflowNode(workflowNodeData);
+        }),
+        listEdge.map(async (edge) => {
+          const workflowEdgeData: CreateWorkflowEdgeDTO = {
+            id: edge.id,
+            flowId: workflowData.id,
+            sourceId: edge.source,
+            sourceName: edge.sourceHandle,
+            targetId: edge.target,
+            targetName: edge.targetHandle,
+          };
+
+          await this.workflowEdgeService.saveWorkflowEdge(workflowEdgeData);
+        }),
+        listVariable.map(async (variable) => {
+          const existedVariable =
+            await this.workflowVariableService.findVariable(
+              workflowData.id,
+              variable.label,
+            );
+          const workflowVariableData: CreateWorkflowVariableDTO = {
+            id: existedVariable ? existedVariable.id : '',
+            flowId: workflowData.id,
+            variableName: variable.label,
+          };
+
+          await this.workflowVariableService.saveWorkflowVariable(
+            workflowVariableData,
+          );
+        }),
+      ]);
+
+      excludeData(workflowData, ['delete']);
+      return workflowData;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  private async saveWorkflowData(workflow: CreateWorkflowDTO) {
+    try {
+      const newWorkflow = await this.prismaService.workflow.upsert({
+        where: { id: workflow.id },
+        create: workflow,
+        update: workflow,
       });
 
       return newWorkflow;
-    } catch (error) {
-      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
-    }
-  }
-
-  private async createWorkflowNode(workflowNode: CreateWorkflowNodeDTO) {
-    try {
-      const newWorkflowNode = await this.prismaService.workflowNode.create({
-        data: workflowNode,
-      });
-
-      return newWorkflowNode;
-    } catch (error) {
-      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
-    }
-  }
-
-  private async createWorkflowEdge(workflowEdge: CreateWorkflowEdgeDTO) {
-    try {
-      const newWorkflowEdge = await this.prismaService.workflowEdge.create({
-        data: workflowEdge,
-      });
-
-      return newWorkflowEdge;
-    } catch (error) {
-      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
-    }
-  }
-
-  private async createWorkflowVariable(workflowVar: CreateWorkflowVariableDTO) {
-    try {
-      const newWorkflowVar = await this.prismaService.workflowVariable.create({
-        data: workflowVar,
-      });
-
-      return newWorkflowVar;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }

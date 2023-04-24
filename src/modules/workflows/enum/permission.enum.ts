@@ -19,6 +19,11 @@ export const WorkflowPerm = {
     permission: 'create-workflow',
     screen: 'Workflows',
   },
+  UpdateWorkflow: {
+    displayName: 'Update Workflow',
+    permission: 'update-workflow',
+    screen: 'Workflows',
+  },
 } as const;
 
 export type WorkflowPerm = keyof typeof WorkflowPerm;
