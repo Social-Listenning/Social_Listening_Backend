@@ -20,4 +20,26 @@ export class WorkflowNodeService {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
   }
+
+  async removeAllNode(workflowId: string) {
+    try {
+      await this.prismaService.workflowNode.deleteMany({
+        where: { flowId: workflowId },
+      });
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  async findReceiveNode(workflowId: string) {
+    try {
+      const node = await this.prismaService.workflowNode.findFirst({
+        where: { flowId: workflowId, type: 'Receive' },
+      });
+
+      return node;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
 }

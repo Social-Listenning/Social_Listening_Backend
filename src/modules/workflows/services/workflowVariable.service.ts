@@ -28,6 +28,16 @@ export class WorkflowVariableService {
     }
   }
 
+  async removeAllVariable(workflowId: string) {
+    try {
+      await this.prismaService.workflowVariable.deleteMany({
+        where: { flowId: workflowId },
+      });
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
   async findVariable(workflowId: string, variableName: string) {
     try {
       return await this.prismaService.workflowVariable.findFirst({

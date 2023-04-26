@@ -2,7 +2,6 @@ import { UserInTabService } from 'src/modules/users/services/userInTab.service';
 import {
   Body,
   Controller,
-  Delete,
   Param,
   Post,
   Put,

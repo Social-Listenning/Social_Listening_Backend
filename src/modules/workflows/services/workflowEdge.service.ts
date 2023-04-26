@@ -20,4 +20,14 @@ export class WorkflowEdgeService {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
   }
+
+  async removeAllEdge(workflowId: string) {
+    try {
+      await this.prismaService.workflowEdge.deleteMany({
+        where: { flowId: workflowId },
+      });
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
 }

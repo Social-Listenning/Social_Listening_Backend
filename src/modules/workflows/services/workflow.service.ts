@@ -171,6 +171,11 @@ export class WorkflowService {
       };
 
       const workflowData = await this.saveWorkflowData(createWorkflowData);
+
+      await this.workflowNodeService.removeAllNode(workflowId);
+      await this.workflowEdgeService.removeAllEdge(workflowId);
+      await this.workflowVariableService.removeAllVariable(workflowId);
+
       Promise.all([
         listNode.map(async (node) => {
           const workflowNodeData: CreateWorkflowNodeDTO = {
@@ -216,6 +221,23 @@ export class WorkflowService {
 
       excludeData(workflowData, ['delete']);
       return workflowData;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  async haveReceiveMessageNode(tabId: string) {
+    try {
+      const workflowActive = await this.prismaService.workflow.findFirst({
+        where: { tabId: tabId, isActive: true },
+      });
+      if (!workflowActive) return false;
+
+      const receiveNode = await this.workflowNodeService.findReceiveNode(
+        workflowActive.id,
+      );
+
+      return receiveNode ? true : false;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
