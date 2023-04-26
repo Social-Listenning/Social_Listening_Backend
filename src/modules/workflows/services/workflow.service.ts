@@ -223,11 +223,17 @@ export class WorkflowService {
 
   private async saveWorkflowData(workflow: CreateWorkflowDTO) {
     try {
-      const newWorkflow = await this.prismaService.workflow.upsert({
-        where: { id: workflow.id },
-        create: workflow,
-        update: workflow,
-      });
+      let newWorkflow = null;
+      if (!workflow.id) {
+        newWorkflow = await this.prismaService.workflow.create({
+          data: workflow,
+        });
+      } else {
+        newWorkflow = await this.prismaService.workflow.update({
+          where: { id: workflow.id },
+          data: workflow,
+        });
+      }
 
       return newWorkflow;
     } catch (error) {

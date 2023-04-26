@@ -9,11 +9,18 @@ export class WorkflowVariableService {
 
   async saveWorkflowVariable(workflowVar: CreateWorkflowVariableDTO) {
     try {
-      const newWorkflowVar = await this.prismaService.workflowVariable.upsert({
-        where: { id: workflowVar.id },
-        create: workflowVar,
-        update: workflowVar,
-      });
+      let newWorkflowVar = null;
+
+      if (!workflowVar.id) {
+        newWorkflowVar = await this.prismaService.workflowVariable.create({
+          data: workflowVar,
+        });
+      } else {
+        newWorkflowVar = await this.prismaService.workflowVariable.update({
+          where: { id: workflowVar.id },
+          data: workflowVar,
+        });
+      }
 
       return newWorkflowVar;
     } catch (error) {

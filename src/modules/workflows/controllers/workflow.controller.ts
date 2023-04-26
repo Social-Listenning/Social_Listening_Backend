@@ -102,7 +102,7 @@ export class WorkflowController {
     return result;
   }
 
-  @Delete('/:workflowId')
+  @Post('remove/:workflowId')
   @UseGuards(PermissionGuard(WorkflowPerm.DeleteWorkflow.permission))
   async deleteWorkflow(
     @Req() request: RequestWithUser,
