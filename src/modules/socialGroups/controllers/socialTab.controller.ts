@@ -15,10 +15,14 @@ import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.inte
 import { SocialTab } from '../models/socialGroup.model';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 import { WorkingState } from 'src/common/enum/workingState.enum';
+import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
 
 @Controller('socialTab')
 export class SocialTabController {
-  constructor(private readonly socialTabService: SocialTabService) {}
+  constructor(
+    private readonly socialTabService: SocialTabService,
+    private readonly workflowService: WorkflowService,
+  ) {}
 
   @Get('/:id/working')
   @UseGuards(APIKeyGuard)
@@ -26,7 +30,10 @@ export class SocialTabController {
     const result = new ReturnResult<boolean>();
     try {
       const socialTab = await this.socialTabService.getTabByNetworkId(id);
-      result.result = socialTab.isWorked === WorkingState.Working;
+      const haveReceiveMessageNode =
+        await this.workflowService.haveReceiveMessageNode(socialTab.id);
+      result.result =
+        socialTab.isWorked === WorkingState.Working && haveReceiveMessageNode;
     } catch (error) {
       result.message = error.message;
     }

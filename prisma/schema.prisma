@@ -116,6 +116,7 @@ model SocialTab {
   SocialTabLog     SocialTabLog[]
   SocialPost       SocialPost[]
   SocialTabSetting SocialTabSetting[]
+  Workflow         Workflow[]
 }
 
 model SocialNetwork {
@@ -230,4 +231,56 @@ model SocialTabSetting {
   group     String
   key       String
   value     String
+}
+
+model Workflow {
+  id               String             @id @default(uuid())
+  socialTab        SocialTab?         @relation(fields: [tabId], references: [id])
+  tabId            String?
+  name             String
+  delete           Boolean            @default(false)
+  extendData       String?
+  isActive         Boolean            @default(false)
+  createAt         DateTime           @updatedAt()
+  WorkflowEdge     WorkflowEdge[]
+  WorkflowNode     WorkflowNode[]
+  WorkflowVariable WorkflowVariable[]
+  WorkflowData     WorkflowData[]
+}
+
+model WorkflowVariable {
+  id               String   @id @default(uuid())
+  flow             Workflow @relation(fields: [flowId], references: [id])
+  flowId           String
+  variableName     String
+  variableValue    String?
+  variableDataType String?
+}
+
+model WorkflowNode {
+  id         String   @id
+  flow       Workflow @relation(fields: [flowId], references: [id])
+  flowId     String
+  type       String
+  position_X Int
+  position_Y Int
+  data       String
+}
+
+model WorkflowEdge {
+  id         String   @id
+  flow       Workflow @relation(fields: [flowId], references: [id])
+  flowId     String
+  sourceId   String
+  sourceName String
+  targetId   String
+  targetName String
+}
+
+model WorkflowData {
+  id        String   @id @default(uuid())
+  flow      Workflow @relation(fields: [flowId], references: [id])
+  flowId    String
+  messageId String
+  data      String
 }
