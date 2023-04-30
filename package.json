@@ -24,6 +24,7 @@
   "dependencies": {
     "@hapi/joi": "^17.1.1",
     "@nestjs-modules/mailer": "^1.8.1",
+    "@nestjs/axios": "^2.0.0",
     "@nestjs/bull": "^0.6.3",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
@@ -39,6 +40,7 @@
     "@types/passport-jwt": "^3.0.8",
     "@types/passport-local": "^1.0.35",
     "@types/socket.io": "^3.0.2",
+    "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "bull": "^4.10.4",
     "class-transformer": "^0.5.1",

@@ -10,6 +10,7 @@ import {
 import { SocialMessageService } from '../services/socialMessage.service';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 import {
+  SentimentMessageDTO,
   SocialMessageDTO,
   SocialMessageInfoDTO,
   SocialPostDTO,
@@ -26,6 +27,8 @@ import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.
 import { PagedData } from 'src/common/models/paging/pagedData.dto';
 import { SocialPostWithMessage } from '../dtos/socialPostWithMessage.dto';
 import { SocialMessageGateway } from '../gateways/socialMessage.gateway';
+import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
+import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 
 @Controller('social-message')
 export class SocialMessageController {
@@ -36,6 +39,7 @@ export class SocialMessageController {
     private socialTabService: SocialTabService,
     private userInTabService: UserInTabService,
     private socialMessageGateway: SocialMessageGateway,
+    private workflowService: WorkflowService,
   ) {}
 
   @Post('save')
@@ -77,9 +81,50 @@ export class SocialMessageController {
       );
       if (savedMessage.type === 'Comment') {
         await this.socialMessageGateway.pushSocialLog(savedPost.id, tab.id);
+
+        // Identify the workflow
+        await this.workflowService.tryCallHook(
+          tab.id,
+          WorkflowNodeType.ReceiveMessage,
+          {
+            tabId: tab.id,
+            messageId: savedMessage.id,
+            message: savedMessage.message,
+            parent: message.parent,
+          },
+        );
       }
 
       result.result = savedMessage;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('calculate-sentiment')
+  @UseGuards(APIKeyGuard)
+  async calculateSentiment(@Body() message: SentimentMessageDTO) {
+    const result = new ReturnResult<object>();
+
+    try {
+      const tab = await this.socialTabService.getSocialTabById(message.tabId);
+      if (tab.isWorked === WorkingState.Pause)
+        throw new Error(`SocialTab is stopping`);
+
+      const messageUpdated = await this.socialMessageService.updateSentiment(
+        message.messageId,
+        message.exactSentiment,
+      );
+
+      // Identify the workflow
+      await this.workflowService.tryCallHook(
+        tab.id,
+        WorkflowNodeType.SentimentAnalysis,
+        message,
+      );
+
+      result.result = messageUpdated;
     } catch (error) {
       result.message = error.message;
     }

@@ -42,4 +42,28 @@ export class WorkflowNodeService {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
   }
+
+  async findNodeByFlowId(flowId: string, currentNodeType: string) {
+    try {
+      const workflowActive = await this.prismaService.workflowNode.findFirst({
+        where: { flowId: flowId, type: currentNodeType },
+      });
+
+      return workflowActive;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  async findNodeById(flowId: string, currentNodeId: string) {
+    try {
+      const workflowActive = await this.prismaService.workflowNode.findFirst({
+        where: { flowId: flowId, id: currentNodeId },
+      });
+
+      return workflowActive;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
 }

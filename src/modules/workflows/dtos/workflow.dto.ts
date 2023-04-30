@@ -7,7 +7,7 @@ export class WorkflowDTO {
 export class WorkflowData {
   nodes: WorkflowBlock[];
   edges: WorkflowEdge[];
-  variables: WorkflowVariable[];
+  variables: string[];
 }
 
 export class WorkflowBlock {
@@ -23,10 +23,6 @@ export class WorkflowEdge {
   sourceHandle: string;
   target: string;
   targetHandle: string;
-}
-
-export class WorkflowVariable {
-  label: string;
 }
 
 export class WorkflowPosition {

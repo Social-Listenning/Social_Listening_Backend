@@ -245,6 +245,7 @@ model Workflow {
   WorkflowEdge     WorkflowEdge[]
   WorkflowNode     WorkflowNode[]
   WorkflowVariable WorkflowVariable[]
+  WorkflowData     WorkflowData[]
 }
 
 model WorkflowVariable {
@@ -274,4 +275,12 @@ model WorkflowEdge {
   sourceName String
   targetId   String
   targetName String
+}
+
+model WorkflowData {
+  id        String   @id @default(uuid())
+  flow      Workflow @relation(fields: [flowId], references: [id])
+  flowId    String
+  messageId String
+  data      String
 }

@@ -1,4 +1,5 @@
 import { Injectable, forwardRef, Inject } from '@nestjs/common';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { SocialNetworkService } from 'src/modules/socialNetworks/services/socialNetwork.service';
 import { excludeData } from 'src/utils/excludeData';
@@ -67,5 +68,18 @@ export class SocialTabService {
     });
 
     return socialTab;
+  }
+
+  async getSocialTabInfo(tabId: string) {
+    try {
+      const socialTab = await this.prismaService.socialTab.findFirst({
+        where: { id: tabId },
+        include: { SocialNetwork: true },
+      });
+
+      return socialTab;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
   }
 }

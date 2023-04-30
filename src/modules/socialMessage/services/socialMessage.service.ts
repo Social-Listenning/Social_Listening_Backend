@@ -62,4 +62,13 @@ export class SocialMessageService {
     });
     return countComments;
   }
+
+  async updateSentiment(messageId: string, sentimentValue: number) {
+    const message = await this.prismaService.socialMessage.update({
+      where: { id: messageId },
+      data: { sentiment: sentimentValue },
+    });
+
+    return message;
+  }
 }

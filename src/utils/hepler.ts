@@ -62,4 +62,14 @@ export class Helper {
     else if (gender?.toLowerCase() === 'Female'.toLowerCase()) return 'Female';
     return 'Other';
   }
+
+  public static getSentimentRange(data) {
+    const sentimentRange = Object.keys(data).reduce((acc, key) => {
+      const [min, max] = data[key].split(' - ');
+      acc[key] = { min: parseFloat(min), max: parseFloat(max) };
+      return acc;
+    }, {});
+
+    return sentimentRange;
+  }
 }

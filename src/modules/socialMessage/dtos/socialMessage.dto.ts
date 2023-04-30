@@ -31,3 +31,10 @@ export class SocialMessageInfoDTO extends CreateSocialMessageDTO {
   commentId: string;
   parentId: string;
 }
+
+export class SentimentMessageDTO {
+  exactSentiment: number;
+  sentiment: number[];
+  tabId: string;
+  messageId: string;
+}
