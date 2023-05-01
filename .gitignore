@@ -3,6 +3,7 @@
 /node_modules
 /upload
 /export
+/.vscode
 
 # Logs
 logs

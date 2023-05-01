@@ -2,7 +2,7 @@ import { SocialMessage, SocialPost } from '@prisma/client';
 
 export const excludeSocialMessage: (keyof SocialMessage)[] = [
   'parentId',
-  'sender',
+  'senderId',
 ];
 
 export const excludeSocialPost: (keyof SocialPost)[] = ['tabId'];

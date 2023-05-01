@@ -1,7 +1,7 @@
 export class CreateSocialMessageDTO {
   networkId: string;
   message: string;
-  sender: string;
+  sender: SocialSenderDTO;
   createdAt: Date;
   type: string;
   parent: SocialPostDTO;
@@ -10,7 +10,7 @@ export class CreateSocialMessageDTO {
 
 export class SocialMessageDTO {
   type: string;
-  sender: string;
+  senderId: string;
   message: string;
   createdAt: Date;
   parentId: string;
@@ -37,4 +37,10 @@ export class SentimentMessageDTO {
   sentiment: number[];
   tabId: string;
   messageId: string;
+}
+
+export class SocialSenderDTO {
+  id: string;
+  name: string;
+  avatar: string;
 }

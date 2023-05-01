@@ -41,9 +41,10 @@ export class SocialMessageService {
       orderBy: page.orders,
       skip: (page.pageNumber - 1) * page.size,
       take: page.size,
+      include: { sender: true },
     });
     return listComments.map((data) =>
-      excludeData(data, ['parentId', 'sender']),
+      excludeData(data, ['parentId', 'senderId']),
     );
   }
 
@@ -51,9 +52,10 @@ export class SocialMessageService {
     const listComments = await this.prismaService.socialMessage.findMany({
       where: { OR: [{ messageId: messageId }, { parentId: messageId }] },
       orderBy: { createdAt: 'asc' },
+      include: { sender: true },
     });
     return listComments.map((data) =>
-      excludeData(data, ['parentId', 'sender']),
+      excludeData(data, ['parentId', 'senderId']),
     );
   }
   async countComment(page) {

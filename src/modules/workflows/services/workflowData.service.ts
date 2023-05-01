@@ -47,6 +47,8 @@ export class WorkflowDataService {
           postId: post.postId,
           fb_message_id: message.messageId,
           pageId: pageInfo.id,
+          pageName: pageInfo.name,
+          avatarUrl: pageInfo.pictureUrl,
           token: pageInfo.accessToken,
         };
 

@@ -46,4 +46,20 @@ export class SocialNetworkService {
     }
     return result;
   }
+
+  async getNetworkInfo(networkId: string) {
+    try {
+      const network = await this.prismaService.socialNetwork.findFirst({
+        where: {
+          extendData: {
+            contains: `"id":"${networkId}"`,
+          },
+        },
+      });
+
+      return network;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
 }

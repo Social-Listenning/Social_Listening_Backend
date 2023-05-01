@@ -7,10 +7,12 @@ import { SocialPostService } from './services/socialPost.service';
 import { UserModule } from '../users/user.module';
 import { SocialMessageGateway } from './gateways/socialMessage.gateway';
 import { WorkflowModule } from '../workflows/workflow.module';
+import { SocialSenderModule } from '../socialSender/socialSender.module';
 
 @Module({
   imports: [
     PrismaModule,
+    SocialSenderModule,
     forwardRef(() => UserModule),
     forwardRef(() => SocialGroupModule),
     forwardRef(() => WorkflowModule),
