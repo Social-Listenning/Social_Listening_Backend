@@ -209,16 +209,26 @@ model SocialPost {
   @@index([tabId])
 }
 
+model SocialSender {
+  id            String          @id @default(uuid())
+  type          String
+  senderId      String
+  fullName      String
+  avatarUrl     String
+  SocialMessage SocialMessage[]
+}
+
 model SocialMessage {
-  id        String   @id @default(uuid())
+  id        String       @id @default(uuid())
+  sender    SocialSender @relation(fields: [senderId], references: [id])
   message   String
-  sender    String
+  senderId  String
   createdAt DateTime
   type      String
   messageId String
   parentId  String
   sentiment Float?
-  isRead    Boolean  @default(false)
+  isRead    Boolean      @default(false)
 
   @@index([isRead])
   @@index([parentId])

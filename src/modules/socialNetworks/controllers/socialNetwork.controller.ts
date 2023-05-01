@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { SocialNetworkService } from '../services/socialNetwork.service';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
 import {
@@ -12,6 +21,7 @@ import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { RoleService } from 'src/modules/roles/services/role.service';
 import { UserInTabService } from 'src/modules/users/services/userInTab.service';
+import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 
 @Controller('socialNetwork')
 export class SocialNetworkController {
@@ -63,5 +73,18 @@ export class SocialNetworkController {
   @UseGuards(PermissionGuard(SocialNetworkPerm.updateSocialNetwork.permission))
   async updateSocialNetwork(@Body() data: UpdateSocialNetworkDTO) {
     return await this.socialNetworkService.updateSocialNetwork(data);
+  }
+
+  @Get('/:id/')
+  @UseGuards(APIKeyGuard)
+  async getTabInfo(@Param('id') id: string) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const socialNetwork = await this.socialNetworkService.getNetworkInfo(id);
+      return socialNetwork;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
   }
 }

@@ -29,6 +29,7 @@ import { SocialPostWithMessage } from '../dtos/socialPostWithMessage.dto';
 import { SocialMessageGateway } from '../gateways/socialMessage.gateway';
 import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
 import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
+import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
 
 @Controller('social-message')
 export class SocialMessageController {
@@ -40,6 +41,7 @@ export class SocialMessageController {
     private userInTabService: UserInTabService,
     private socialMessageGateway: SocialMessageGateway,
     private workflowService: WorkflowService,
+    private socialSenderService: SocialSenderService,
   ) {}
 
   @Post('save')
@@ -76,8 +78,18 @@ export class SocialMessageController {
         }
       }
 
+      let sender = await this.socialSenderService.findSender(message.sender.id);
+      if (!sender) {
+        sender = await this.socialSenderService.createSender({
+          type: 'Facebook',
+          senderId: message.sender.id,
+          fullName: message.sender.name,
+          avatarUrl: message.sender.avatar,
+        });
+      }
+
       const savedMessage = await this.socialMessageService.saveMessage(
-        this.remakeMessageData(message, savedPost.id),
+        this.remakeMessageData(message, savedPost.id, sender.id),
       );
       if (savedMessage.type === 'Comment') {
         await this.socialMessageGateway.pushSocialLog(savedPost.id, tab.id);
@@ -204,15 +216,18 @@ export class SocialMessageController {
   private remakeMessageData(
     message: SocialMessageInfoDTO,
     postId: string,
+    senderId: string,
   ): SocialMessageDTO {
     const newMessage = {
       ...message,
       createdAt: new Date(message.createdAt),
       messageId: message.commentId,
       sentiment: message.sentiment,
+      senderId: senderId,
       parentId: message.parentId === message.postId ? postId : message.parentId,
     };
 
+    delete newMessage['sender'];
     delete newMessage['postId'];
     delete newMessage['commentId'];
 
