@@ -4,6 +4,7 @@ import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.inte
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   Req,
@@ -416,6 +417,20 @@ export class UserController {
     } catch (error) {
       result.message = error.message;
     }
+    return result;
+  }
+
+  @Get('/:userId')
+  @UseGuards(JWTAuthGuard)
+  async getUserNameById(@Param() { userId }) {
+    const result = new ReturnResult<string>();
+    try {
+      const userInfo = await this.userService.getUserById(userId);
+      result.result = userInfo.userName;
+    } catch (error) {
+      result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
+
     return result;
   }
 }
