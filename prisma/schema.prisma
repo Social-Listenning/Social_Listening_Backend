@@ -117,6 +117,7 @@ model SocialTab {
   SocialPost       SocialPost[]
   SocialTabSetting SocialTabSetting[]
   Workflow         Workflow[]
+  Message          Message[]
 }
 
 model SocialNetwork {
@@ -210,12 +211,14 @@ model SocialPost {
 }
 
 model SocialSender {
-  id            String          @id @default(uuid())
-  type          String
-  senderId      String
-  fullName      String
-  avatarUrl     String
-  SocialMessage SocialMessage[]
+  id             String          @id @default(uuid())
+  type           String
+  senderId       String
+  fullName       String
+  avatarUrl      String
+  SocialMessage  SocialMessage[]
+  MessageSent    Message[]       @relation("sender")
+  MessageReceive Message[]       @relation("recipient")
 }
 
 model SocialMessage {
@@ -232,6 +235,31 @@ model SocialMessage {
 
   @@index([isRead])
   @@index([parentId])
+}
+
+model Message {
+  id             String           @id @default(uuid())
+  sender         SocialSender     @relation("sender", fields: [senderId], references: [id])
+  recipient      SocialSender     @relation("recipient", fields: [recipientId], references: [id])
+  socialTab      SocialTab        @relation(fields: [tabId], references: [id])
+  senderId       String
+  recipientId    String
+  tabId          String
+  message        String
+  messageId      String
+  createdAt      DateTime
+  RootMessage    MessageReplied[] @relation("messageReplied")
+  MessageReplied MessageReplied[] @relation("message")
+  socialSenderId String?
+}
+
+model MessageReplied {
+  messageId        String
+  messageRepliedId String
+  message          Message @relation("message", fields: [messageId], references: [id])
+  messageReplied   Message @relation("messageReplied", fields: [messageRepliedId], references: [id])
+
+  @@id([messageId, messageRepliedId])
 }
 
 model SocialTabSetting {
