@@ -10,6 +10,7 @@ export class CreateSocialMessageDTO {
 
 export class SocialMessageDTO {
   type: string;
+  tabId: string;
   senderId: string;
   message: string;
   createdAt: Date;
