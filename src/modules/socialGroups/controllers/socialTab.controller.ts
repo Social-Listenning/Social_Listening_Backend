@@ -40,6 +40,24 @@ export class SocialTabController {
     return result;
   }
 
+  @Get('/:id/accessToken')
+  @UseGuards(APIKeyGuard)
+  async getTabAccessToken(@Param('id') id: string) {
+    const result = new ReturnResult<string>();
+    try {
+      const tab = await this.socialTabService.getTabByNetworkId(id);
+      const socialTab = await this.socialTabService.getSocialTabInfo(tab.id);
+      const page_info = socialTab.SocialNetwork.extendData;
+      if (page_info) {
+        const pageData = JSON.parse(page_info);
+        result.result = pageData?.accessToken;
+      } else return null;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
   @Put('/:id/working')
   @UseGuards(PermissionGuard(SocialTabPerm.updateWorkingStateTab.permission))
   async updateWorkingState(@Req() request: RequestWithUser, @Param() { id }) {
