@@ -89,7 +89,7 @@ export class SocialMessageController {
       }
 
       const savedMessage = await this.socialMessageService.saveMessage(
-        this.remakeMessageData(message, savedPost.id, sender.id),
+        this.remakeMessageData(message, tab.id, savedPost.id, sender.id),
       );
       if (savedMessage.type === 'Comment') {
         await this.socialMessageGateway.pushSocialLog(savedPost.id, tab.id);
@@ -159,6 +159,7 @@ export class SocialMessageController {
       if (!exist) throw new Error(`You are not allowed to access this page`);
 
       const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND.push({ tabId: { equals: tabId } });
       data.filter.AND.push({
         AND: [
           { type: { not: { equals: 'Bot' } } },
@@ -215,11 +216,13 @@ export class SocialMessageController {
 
   private remakeMessageData(
     message: SocialMessageInfoDTO,
+    tabId: string,
     postId: string,
     senderId: string,
   ): SocialMessageDTO {
     const newMessage = {
       ...message,
+      tabId: tabId,
       createdAt: new Date(message.createdAt),
       messageId: message.commentId,
       sentiment: message.sentiment,

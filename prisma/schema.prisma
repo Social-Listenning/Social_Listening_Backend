@@ -118,6 +118,7 @@ model SocialTab {
   SocialTabSetting SocialTabSetting[]
   Workflow         Workflow[]
   Message          Message[]
+  SocialMessage    SocialMessage[]
 }
 
 model SocialNetwork {
@@ -223,7 +224,7 @@ model SocialSender {
 
 model SocialMessage {
   id        String       @id @default(uuid())
-  sender    SocialSender @relation(fields: [senderId], references: [id])
+  tabId     String
   message   String
   senderId  String
   createdAt DateTime
@@ -232,6 +233,8 @@ model SocialMessage {
   parentId  String
   sentiment Float?
   isRead    Boolean      @default(false)
+  tab       SocialTab    @relation(fields: [tabId], references: [id])
+  sender    SocialSender @relation(fields: [senderId], references: [id])
 
   @@index([isRead])
   @@index([parentId])
