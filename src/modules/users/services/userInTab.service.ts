@@ -56,14 +56,14 @@ export class UserInTabService {
 
     const role = await this.roleService.getRoleByRoleName('SUPPORTER');
 
-    Promise.all(
+    await Promise.all(
       listUser.map(async (userId) => {
         const user = await this.userService.getUserById(userId);
         fakeDB[userId] = user;
       }),
     );
 
-    Promise.all(
+    await Promise.all(
       listTab.map(async (tabId) => {
         const tab = await this.socialTabService.getSocialTabById(tabId);
         fakeDB[tabId] = tab;

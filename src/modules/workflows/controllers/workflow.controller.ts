@@ -91,7 +91,7 @@ export class WorkflowController {
       }
 
       if (data.activate === true) {
-        await this.workflowService.deactivateAllWorkflow();
+        await this.workflowService.deactivateAllWorkflow(workflow.type);
       }
       await this.workflowService.updateActivation(workflowId, data);
       result.result = true;

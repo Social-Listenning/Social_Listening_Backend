@@ -1,6 +1,7 @@
 export class WorkflowDTO {
   name: string;
   tabId: string;
+  type: string;
   data: WorkflowData;
 }
 
@@ -34,6 +35,7 @@ export class CreateWorkflowDTO {
   id?: string;
   name: string;
   tabId: string;
+  type: string;
   extendData?: string;
 }
 

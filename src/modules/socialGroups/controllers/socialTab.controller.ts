@@ -24,14 +24,17 @@ export class SocialTabController {
     private readonly workflowService: WorkflowService,
   ) {}
 
-  @Get('/:id/working')
+  @Get('/:id/working/type/:messageType')
   @UseGuards(APIKeyGuard)
-  async getTabWorkingState(@Param('id') id: string) {
+  async getTabWorkingState(@Param() { id, messageType }) {
     const result = new ReturnResult<boolean>();
     try {
       const socialTab = await this.socialTabService.getTabByNetworkId(id);
       const haveReceiveMessageNode =
-        await this.workflowService.haveReceiveMessageNode(socialTab.id);
+        await this.workflowService.haveReceiveMessageNode(
+          socialTab.id,
+          messageType,
+        );
       result.result =
         socialTab.isWorked === WorkingState.Working && haveReceiveMessageNode;
     } catch (error) {
