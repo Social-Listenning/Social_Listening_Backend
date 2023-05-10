@@ -280,13 +280,13 @@ export class WorkflowService {
           );
 
           if (nextNode) {
-            if (nextNode.type === WorkflowNodeType.SentimentAnalysis)
+            if (nextNode.type === WorkflowNodeType.SentimentAnalysis) {
               await this.callService(
                 workflow.id,
                 data['messageId'],
                 nextNode.type,
               );
-            else if (nextNode.type === WorkflowNodeType.ResponseMessage)
+            } else if (nextNode.type === WorkflowNodeType.ResponseMessage) {
               await this.callService(
                 workflow.id,
                 data['messageId'],
@@ -295,6 +295,7 @@ export class WorkflowService {
                   replyInfo: JSON.parse(nextNode.data),
                 },
               );
+            }
           }
           break;
         case WorkflowNodeType.SentimentAnalysis:

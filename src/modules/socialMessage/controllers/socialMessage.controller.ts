@@ -105,6 +105,7 @@ export class SocialMessageController {
             messageId: savedMessage.id,
             message: savedMessage.message,
             parent: message.parent,
+            messageType: WorkflowTypeEnum.Message,
           },
         );
       }

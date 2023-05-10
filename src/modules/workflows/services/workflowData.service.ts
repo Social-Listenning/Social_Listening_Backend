@@ -5,6 +5,9 @@ import { WorkflowService } from './workflow.service';
 import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.service';
 import { SocialMessageService } from 'src/modules/socialMessage/services/socialMessage.service';
 import { SocialPostService } from 'src/modules/socialMessage/services/socialPost.service';
+import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
+import { MessageService } from 'src/modules/message/services/message.service';
+import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
 
 @Injectable()
 export class WorkflowDataService {
@@ -13,7 +16,9 @@ export class WorkflowDataService {
     private readonly tabService: SocialTabService,
     @Inject(forwardRef(() => WorkflowService))
     private readonly workflowService: WorkflowService,
-    private readonly messageService: SocialMessageService,
+    private readonly messageService: MessageService,
+    private readonly socialSenderService: SocialSenderService,
+    private readonly socialMessageService: SocialMessageService,
     private readonly postService: SocialPostService,
   ) {}
 
@@ -33,9 +38,13 @@ export class WorkflowDataService {
         });
 
         return updatedData;
-      } else {
-        const message = await this.messageService.findCommentById(messageId);
-        const rootMessage = await this.messageService.getRootMessage(messageId);
+      } else if (data.messageType === WorkflowTypeEnum.Comment) {
+        const message = await this.socialMessageService.findCommentById(
+          messageId,
+        );
+        const rootMessage = await this.socialMessageService.getRootMessage(
+          messageId,
+        );
         const workflow = await this.workflowService.getWorkflowById(workflowId);
         const tabData = await this.tabService.getSocialTabInfo(workflow.tabId);
         const post = await this.postService.getSocialPostById(
@@ -57,6 +66,36 @@ export class WorkflowDataService {
             flowId: workflowId,
             messageId: messageId,
             data: JSON.stringify(optionData),
+          },
+        });
+
+        return newData;
+      } else if (data.messageType === WorkflowTypeEnum.Message) {
+        const workflow = await this.workflowService.getWorkflowById(workflowId);
+        const tabData = await this.tabService.getSocialTabInfo(workflow.tabId);
+        const pageInfo = JSON.parse(tabData.SocialNetwork.extendData);
+
+        const message = await this.messageService.findCommentById(messageId);
+        const sender = await this.socialSenderService.findSenderById(
+          message.senderId,
+        );
+        const recipient = await this.socialSenderService.findSenderById(
+          message.recipientId,
+        );
+
+        const optData = {
+          ...data,
+          sender: sender,
+          recipient: recipient,
+          pageId: pageInfo.id,
+          token: pageInfo.accessToken,
+        };
+
+        const newData = await this.prismaService.workflowData.create({
+          data: {
+            flowId: workflowId,
+            messageId: messageId,
+            data: JSON.stringify(optData),
           },
         });
 

@@ -50,6 +50,18 @@ export class MessageService {
     }
   }
 
+  async findCommentById(messageId: string) {
+    try {
+      const message = await this.prismaService.message.findFirst({
+        where: { id: messageId },
+      });
+
+      return message;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
   async getAllConversation(tabId: string, networkId: string) {
     const result = [];
     const listConversation = new Map<string, object>();
