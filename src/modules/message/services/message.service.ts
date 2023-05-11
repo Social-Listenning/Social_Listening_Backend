@@ -50,6 +50,18 @@ export class MessageService {
     }
   }
 
+  async findCommentById(messageId: string) {
+    try {
+      const message = await this.prismaService.message.findFirst({
+        where: { id: messageId },
+      });
+
+      return message;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
   async getAllConversation(tabId: string, networkId: string) {
     const result = [];
     const listConversation = new Map<string, object>();
@@ -124,5 +136,14 @@ export class MessageService {
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
+  }
+
+  async updateSentiment(messageId: string, sentimentValue: number) {
+    const message = await this.prismaService.message.update({
+      where: { id: messageId },
+      data: { sentiment: sentimentValue },
+    });
+
+    return message;
   }
 }

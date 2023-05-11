@@ -75,9 +75,10 @@ export class WorkflowService {
     }
   }
 
-  async deactivateAllWorkflow() {
+  async deactivateAllWorkflow(workflowType: string) {
     try {
       await this.prismaService.workflow.updateMany({
+        where: { type: workflowType },
         data: { isActive: false },
       });
     } catch (error) {
@@ -116,12 +117,13 @@ export class WorkflowService {
       const listVariable = workflow.data.variables;
       const createWorkflowData: CreateWorkflowDTO = {
         name: workflow.name,
+        type: workflow.type,
         tabId: workflow.tabId,
         extendData: JSON.stringify(workflow.data),
       };
 
       const workflowData = await this.saveWorkflowData(createWorkflowData);
-      Promise.all([
+      await Promise.all([
         listNode.map(async (node) => {
           const workflowNodeData: CreateWorkflowNodeDTO = {
             id: node.id,
@@ -171,6 +173,7 @@ export class WorkflowService {
       const createWorkflowData: CreateWorkflowDTO = {
         id: workflowId,
         name: workflow.name,
+        type: workflow.type,
         tabId: workflow.tabId,
         extendData: JSON.stringify(workflow.data),
       };
@@ -181,7 +184,7 @@ export class WorkflowService {
       await this.edgeService.removeAllEdge(workflowId);
       await this.variableService.removeAllVariable(workflowId);
 
-      Promise.all([
+      await Promise.all(
         listNode.map(async (node) => {
           const workflowNodeData: CreateWorkflowNodeDTO = {
             id: node.id,
@@ -194,6 +197,8 @@ export class WorkflowService {
 
           await this.nodeService.saveWorkflowNode(workflowNodeData);
         }),
+      );
+      await Promise.all(
         listEdge.map(async (edge) => {
           const workflowEdgeData: CreateWorkflowEdgeDTO = {
             id: edge.id,
@@ -206,6 +211,9 @@ export class WorkflowService {
 
           await this.edgeService.saveWorkflowEdge(workflowEdgeData);
         }),
+      );
+
+      await Promise.all(
         listVariable.map(async (variable) => {
           const existedVariable = await this.variableService.findVariable(
             workflowData.id,
@@ -219,7 +227,7 @@ export class WorkflowService {
 
           await this.variableService.saveWorkflowVariable(workflowVariableData);
         }),
-      ]);
+      );
 
       excludeData(workflowData, ['delete']);
       return workflowData;
@@ -228,10 +236,15 @@ export class WorkflowService {
     }
   }
 
-  async haveReceiveMessageNode(tabId: string) {
+  async haveReceiveMessageNode(tabId: string, workflowType: string) {
     try {
       const workflowActive = await this.prismaService.workflow.findFirst({
-        where: { tabId: tabId, isActive: true },
+        where: {
+          tabId: tabId,
+          delete: false,
+          isActive: true,
+          type: workflowType,
+        },
       });
       if (!workflowActive) return false;
 
@@ -245,9 +258,14 @@ export class WorkflowService {
     }
   }
 
-  async tryCallHook(tabId: string, currentNodeType: string, data) {
+  async tryCallHook(
+    tabId: string,
+    type: string,
+    currentNodeType: string,
+    data: any,
+  ) {
     try {
-      const workflow = await this.findWorkflowByTabId(tabId);
+      const workflow = await this.findWorkflowByTabId(tabId, type);
       await this.dataService.updateData(workflow.id, data['messageId'], data);
       const currentNode = await this.nodeService.findNodeByFlowId(
         workflow.id,
@@ -262,21 +280,22 @@ export class WorkflowService {
           );
 
           if (nextNode) {
-            if (nextNode.type === WorkflowNodeType.SentimentAnalysis)
+            if (nextNode.type === WorkflowNodeType.SentimentAnalysis) {
               await this.callService(
                 workflow.id,
                 data['messageId'],
                 nextNode.type,
               );
-            else if (nextNode.type === WorkflowNodeType.ResponseMessage)
+            } else if (nextNode.type === WorkflowNodeType.ResponseMessage) {
               await this.callService(
                 workflow.id,
                 data['messageId'],
                 nextNode.type,
                 {
-                  messageReply: JSON.parse(nextNode.data)['respond'],
+                  replyInfo: JSON.parse(nextNode.data),
                 },
               );
+            }
           }
           break;
         case WorkflowNodeType.SentimentAnalysis:
@@ -316,7 +335,7 @@ export class WorkflowService {
                 data['messageId'],
                 nextNode.type,
                 {
-                  messageReply: JSON.parse(nextNode.data)['respond'],
+                  replyInfo: JSON.parse(nextNode.data),
                 },
               );
             }
@@ -333,10 +352,10 @@ export class WorkflowService {
     }
   }
 
-  private async findWorkflowByTabId(tabId: string) {
+  private async findWorkflowByTabId(tabId: string, type: string) {
     try {
       const workflowActive = await this.prismaService.workflow.findFirst({
-        where: { tabId: tabId, isActive: true },
+        where: { tabId: tabId, type: type, isActive: true },
       });
 
       return workflowActive;

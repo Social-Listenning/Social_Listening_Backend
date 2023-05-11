@@ -21,11 +21,16 @@ import { PagedData } from 'src/common/models/paging/pagedData.dto';
 import { MessagePage } from '../dtos/messagePage.dto';
 import { AdvancedFilteringService } from 'src/config/database/advancedFiltering.service';
 import { SortOrderType } from 'src/common/enum/sortOrderType.enum';
+import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
+import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
+import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
+import { SentimentMessageDTO } from 'src/modules/socialMessage/dtos/socialMessage.dto';
 
 @Controller('message')
 export class MessageController {
   constructor(
     private readonly messageService: MessageService,
+    private readonly workflowService: WorkflowService,
     private readonly socialTabService: SocialTabService,
     private readonly socialSenderService: SocialSenderService,
     private readonly userInTabService: UserInTabService,
@@ -78,8 +83,27 @@ export class MessageController {
         tabId: tab.id,
         messageId: message.messageId,
         repliedMessageId: message.repliedMessageId,
-        createdAt: message.createdAt,
+        createdAt:
+          typeof message.createdAt === 'string'
+            ? new Date(message.createdAt)
+            : message.createdAt,
       });
+
+      if (message.recipient.id === message.networkId) {
+        // Identify the workflow
+        await this.workflowService.tryCallHook(
+          tab.id,
+          WorkflowTypeEnum.Message,
+          WorkflowNodeType.ReceiveMessage,
+          {
+            tabId: tab.id,
+            messageId: newMessage.id,
+            message: newMessage.message,
+            messageType: WorkflowTypeEnum.Message,
+          },
+        );
+      }
+
       result.result = newMessage;
     } catch (error) {
       result.message = error.message;
@@ -159,6 +183,36 @@ export class MessageController {
       result.message = error.message;
     }
 
+    return result;
+  }
+
+  @Post('calculate-sentiment')
+  @UseGuards(APIKeyGuard)
+  async calculateSentiment(@Body() message: SentimentMessageDTO) {
+    const result = new ReturnResult<object>();
+
+    try {
+      const tab = await this.socialTabService.getSocialTabById(message.tabId);
+      if (tab.isWorked === WorkingState.Pause)
+        throw new Error(`SocialTab is stopping`);
+
+      const messageUpdated = await this.messageService.updateSentiment(
+        message.messageId,
+        message.exactSentiment,
+      );
+
+      // Identify the workflow
+      await this.workflowService.tryCallHook(
+        tab.id,
+        WorkflowTypeEnum.Message,
+        WorkflowNodeType.SentimentAnalysis,
+        message,
+      );
+
+      result.result = messageUpdated;
+    } catch (error) {
+      result.message = error.message;
+    }
     return result;
   }
 }

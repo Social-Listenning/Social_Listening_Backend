@@ -30,6 +30,7 @@ import { SocialMessageGateway } from '../gateways/socialMessage.gateway';
 import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
 import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
+import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
 
 @Controller('social-message')
 export class SocialMessageController {
@@ -97,12 +98,14 @@ export class SocialMessageController {
         // Identify the workflow
         await this.workflowService.tryCallHook(
           tab.id,
+          WorkflowTypeEnum.Comment,
           WorkflowNodeType.ReceiveMessage,
           {
             tabId: tab.id,
             messageId: savedMessage.id,
             message: savedMessage.message,
             parent: message.parent,
+            messageType: WorkflowTypeEnum.Message,
           },
         );
       }
@@ -132,6 +135,7 @@ export class SocialMessageController {
       // Identify the workflow
       await this.workflowService.tryCallHook(
         tab.id,
+        WorkflowTypeEnum.Comment,
         WorkflowNodeType.SentimentAnalysis,
         message,
       );

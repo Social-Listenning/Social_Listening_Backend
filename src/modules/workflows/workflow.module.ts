@@ -10,13 +10,18 @@ import { HttpModule } from '@nestjs/axios';
 import { WorkflowDataService } from './services/workflowData.service';
 import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 import { SocialMessageModule } from '../socialMessage/socialMessage.module';
+import { MessageModule } from '../message/message.module';
+import { SocialSenderModule } from '../socialSender/socialSender.module';
 
 @Module({
   imports: [
     PrismaModule,
     forwardRef(() => UserModule),
-    forwardRef(() => SocialMessageModule),
     forwardRef(() => SocialGroupModule),
+    forwardRef(() => SocialMessageModule),
+    forwardRef(() => MessageModule),
+    SocialSenderModule,
+    MessageModule,
     HttpModule,
   ],
   controllers: [WorkflowController],

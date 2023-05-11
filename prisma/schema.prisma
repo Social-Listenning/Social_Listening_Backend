@@ -250,10 +250,10 @@ model Message {
   tabId          String
   message        String
   messageId      String
+  sentiment      Float?
   createdAt      DateTime
   RootMessage    MessageReplied[] @relation("messageReplied")
   MessageReplied MessageReplied[] @relation("message")
-  socialSenderId String?
 }
 
 model MessageReplied {
@@ -279,6 +279,7 @@ model Workflow {
   socialTab        SocialTab?         @relation(fields: [tabId], references: [id])
   tabId            String?
   name             String
+  type             String             @default("Comment")
   delete           Boolean            @default(false)
   extendData       String?
   isActive         Boolean            @default(false)
