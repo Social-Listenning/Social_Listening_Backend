@@ -24,6 +24,7 @@ import { SortOrderType } from 'src/common/enum/sortOrderType.enum';
 import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
 import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
+import { SentimentMessageDTO } from 'src/modules/socialMessage/dtos/socialMessage.dto';
 
 @Controller('message')
 export class MessageController {
@@ -182,6 +183,36 @@ export class MessageController {
       result.message = error.message;
     }
 
+    return result;
+  }
+
+  @Post('calculate-sentiment')
+  @UseGuards(APIKeyGuard)
+  async calculateSentiment(@Body() message: SentimentMessageDTO) {
+    const result = new ReturnResult<object>();
+
+    try {
+      const tab = await this.socialTabService.getSocialTabById(message.tabId);
+      if (tab.isWorked === WorkingState.Pause)
+        throw new Error(`SocialTab is stopping`);
+
+      const messageUpdated = await this.messageService.updateSentiment(
+        message.messageId,
+        message.exactSentiment,
+      );
+
+      // Identify the workflow
+      await this.workflowService.tryCallHook(
+        tab.id,
+        WorkflowTypeEnum.Message,
+        WorkflowNodeType.SentimentAnalysis,
+        message,
+      );
+
+      result.result = messageUpdated;
+    } catch (error) {
+      result.message = error.message;
+    }
     return result;
   }
 }

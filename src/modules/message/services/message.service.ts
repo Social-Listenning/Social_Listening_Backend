@@ -137,4 +137,13 @@ export class MessageService {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
   }
+
+  async updateSentiment(messageId: string, sentimentValue: number) {
+    const message = await this.prismaService.message.update({
+      where: { id: messageId },
+      data: { sentiment: sentimentValue },
+    });
+
+    return message;
+  }
 }
