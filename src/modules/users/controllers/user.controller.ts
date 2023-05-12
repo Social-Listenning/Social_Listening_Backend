@@ -34,12 +34,14 @@ import { UserInTabService } from '../services/userInTab.service';
 import { UpdateRoleUserDTO } from '../dtos/updateRoleUser.dto';
 import { FileContentResult } from 'src/common/models/file/fileContentResult.dto';
 import { exportExcelFile } from 'src/utils/exportFile';
+import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.service';
 
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly roleService: RoleService,
+    private readonly tabService: SocialTabService,
     private readonly groupService: SocialGroupService,
     private readonly userInTabService: UserInTabService,
     private readonly userInGroupService: UserInGroupService,
@@ -431,6 +433,50 @@ export class UserController {
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
     }
 
+    return result;
+  }
+
+  @Post('/tab/:tabId')
+  @UseGuards(JWTAuthGuard)
+  async getAllUserWithTab(
+    @Req() request: RequestWithUser,
+    @Body() page: UserPage,
+    @Param() { tabId },
+  ) {
+    const user = request.user;
+    const result = new ReturnResult<PagedData<object>>();
+    const pagedData = new PagedData<object>(page);
+
+    try {
+      if (user.role !== 'OWNER')
+        throw new Error(`You are not allowed to access this page`);
+
+      const tab = await this.tabService.getSocialTabById(tabId);
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (tab.groupId !== group.id) {
+        throw new Error(`You are not allowed to access this page`);
+      }
+
+      const data = this.advancedFilteringService.createFilter(page);
+      data.filter.AND.push({
+        socialTab: {
+          id: tabId,
+        },
+      });
+      data.filter.AND.push({ delete: { equals: false } });
+
+      const listResult = await this.userService.findUserWithTab(data);
+
+      pagedData.data = listResult;
+      pagedData.page.totalElement = await this.userService.countUserWithTab(
+        data,
+      );
+      result.result = pagedData;
+    } catch (error) {
+      if (error.message === `You are not allowed to access this page`)
+        result.message = error.message;
+      else result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
+    }
     return result;
   }
 }

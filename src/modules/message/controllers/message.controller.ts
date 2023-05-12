@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { MessageService } from '../services/message.service';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 import { MessageDTO, MessageInConversationDTO } from '../dtos/message.dto';
