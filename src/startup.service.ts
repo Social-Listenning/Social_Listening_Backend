@@ -107,6 +107,16 @@ export class AppService implements OnModuleInit {
         key: 'APIKEY',
         value: '',
       },
+      {
+        group: 'GOOGLE_API',
+        key: 'DIALOGFLOW_KEY',
+        value: '',
+      },
+      {
+        group: 'GOOGLE_API',
+        key: 'DIALOGFLOW_LOCATION',
+        value: '',
+      },
     ];
     const listPerm = [
       UserPerm,
