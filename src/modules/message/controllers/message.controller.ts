@@ -112,7 +112,7 @@ export class MessageController {
     return result;
   }
 
-  @Get('/:tabId/conversations')
+  @Post('/:tabId/conversations')
   @UseGuards(JWTAuthGuard)
   async getAllConversation(
     @Req() request: RequestWithUser,
@@ -141,7 +141,7 @@ export class MessageController {
     return result;
   }
 
-  @Post('/:tabId/:userId')
+  @Post('/:tabId/conversations/:userId')
   @UseGuards(JWTAuthGuard)
   async getMessageInConversation(
     @Req() request: RequestWithUser,
