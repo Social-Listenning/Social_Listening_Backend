@@ -438,6 +438,32 @@ export class UserService {
     });
   }
 
+  async findUserWithTab(page) {
+    const listUser = await this.prismaService.userInTab.findMany({
+      where: page.filter,
+      orderBy: page.orders,
+      include: {
+        user: true,
+        role: true,
+      },
+      skip: (page.pageNumber - 1) * page.size,
+      take: page.size,
+    });
+
+    return listUser.map((user) => {
+      return {
+        user: excludeData(user.user, excludeUsers),
+        role: excludeData(user.role, []),
+      };
+    });
+  }
+
+  async countUserWithTab(page) {
+    return await this.prismaService.userInTab.count({
+      where: page.filter,
+    });
+  }
+
   private checkData(data: ImportEmployeeDTO) {
     const email = data.email;
     const password = data.password;
