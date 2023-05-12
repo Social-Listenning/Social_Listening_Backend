@@ -90,6 +90,7 @@ export class MessageService {
                 ? conversation.sender
                 : conversation.recipient,
             message: conversation.message,
+            from: conversation.senderId,
             lastSent: conversation.createdAt,
           };
 
