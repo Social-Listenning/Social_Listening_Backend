@@ -17,9 +17,15 @@ import { WorkflowVariableService } from './workflowVariable.service';
 import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 import { Helper } from 'src/utils/hepler';
 import { WorkflowDataService } from './workflowData.service';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
 @Injectable()
+@WebSocketGateway()
 export class WorkflowService {
+  @WebSocketServer()
+  server: Server;
+
   constructor(
     private readonly httpService: HttpService,
     private readonly prismaService: PrismaService,
@@ -280,22 +286,14 @@ export class WorkflowService {
           );
 
           if (nextNode) {
-            if (nextNode.type === WorkflowNodeType.SentimentAnalysis) {
-              await this.callService(
-                workflow.id,
-                data['messageId'],
-                nextNode.type,
-              );
-            } else if (nextNode.type === WorkflowNodeType.ResponseMessage) {
-              await this.callService(
-                workflow.id,
-                data['messageId'],
-                nextNode.type,
-                {
-                  replyInfo: JSON.parse(nextNode.data),
-                },
-              );
-            }
+            await this.callService(
+              workflow.id,
+              data['messageId'],
+              nextNode.type,
+              {
+                replyInfo: JSON.parse(nextNode.data),
+              },
+            );
           }
           break;
         case WorkflowNodeType.SentimentAnalysis:
@@ -345,6 +343,11 @@ export class WorkflowService {
         case WorkflowNodeType.ResponseMessage:
           break;
         case WorkflowNodeType.NotifyAgent:
+          await this.callService(
+            workflow.id,
+            data['messageId'],
+            WorkflowNodeType.NotifyAgent,
+          );
           break;
       }
     } catch (error) {
@@ -419,7 +422,20 @@ export class WorkflowService {
           .subscribe();
         break;
       case WorkflowNodeType.NotifyAgent:
+        const workflow = await this.getWorkflowById(flowId);
+        await this.notifyAgent(
+          {
+            messageId: data.messageId,
+            tabId: data.tabId,
+            messageType: data.messageType,
+          },
+          workflow.tabId,
+        );
         break;
     }
+  }
+
+  private async notifyAgent(data: any, roomId: string) {
+    this.server.sockets.to(roomId).emit('notifyAgent', data);
   }
 }

@@ -7,8 +7,8 @@ export class SocketService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async connect(data: SocketDTO) {
-    const existedConnection = await this.getConnection(data.userId);
-    if (existedConnection) await this.disconnect(data.userId);
+    // const existedConnection = await this.getConnection(data.userId);
+    // if (existedConnection) await this.disconnect(data.userId);
 
     const connection = await this.prismaService.socketConnection.create({
       data: data,
