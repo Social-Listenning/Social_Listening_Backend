@@ -53,6 +53,7 @@ export class WorkflowDataService {
         const pageInfo = JSON.parse(tabData.SocialNetwork.extendData);
         const optionData = {
           ...data,
+          flowId: workflowId,
           postId: post.postId,
           fb_message_id: message.messageId,
           pageId: pageInfo.id,
@@ -85,6 +86,7 @@ export class WorkflowDataService {
 
         const optData = {
           ...data,
+          flowId: workflowId,
           sender: sender,
           recipient: recipient,
           pageId: pageInfo.id,

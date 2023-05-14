@@ -20,6 +20,9 @@ import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
 import { WorkflowActivationDTO } from '../dtos/workflowActivation.dto';
 import { WorkflowDTO } from '../dtos/workflow.dto';
+import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
+import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
+import { NotifyAgentDTO } from '../dtos/workflowNotifyAgent.dto';
 
 @Controller('workflow')
 export class WorkflowController {
@@ -184,6 +187,24 @@ export class WorkflowController {
         data,
       );
       result.result = updatedWorkflow;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/:workflowId/notifyAgent')
+  @UseGuards(APIKeyGuard)
+  async notifyAgent(@Param() { workflowId }, @Body() data: NotifyAgentDTO) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const workflow = await this.workflowService.getWorkflowById(workflowId);
+      await this.workflowService.tryCallHook(
+        workflow.tabId,
+        data.messageType,
+        WorkflowNodeType.NotifyAgent,
+        { messageId: data.messageId },
+      );
     } catch (error) {
       result.message = error.message;
     }
