@@ -22,14 +22,15 @@ export class AdvancedFilteringService {
 
   private buildColumnFilter(filter: FilterMapping) {
     const props = filter.props;
+    const type = filter.filterType;
     const isArray = Array.isArray(filter.value);
 
-    if (isArray) {
+    if (isArray && type === 'Default') {
       const orArray = { OR: [] };
       filter.value = filter.value.filter((x) => x !== undefined && x !== null);
       filter.value.forEach((value) => {
         const queryString = {
-          ...this.getQuery(filter.filterOperator, value),
+          ...this.getQuery(filter.filterOperator, type, value),
           // mode: 'insensitive',
         };
         if (typeof value === 'string') queryString['mode'] = 'insensitive';
@@ -39,10 +40,11 @@ export class AdvancedFilteringService {
       return filter.value.length > 0 ? orArray : {};
     } else {
       const queryString = {
-        ...this.getQuery(filter.filterOperator, filter.value),
+        ...this.getQuery(filter.filterOperator, type, filter.value),
         // mode: 'insensitive',
       };
-      if (typeof filter.value === 'string') queryString['mode'] = 'insensitive';
+      if (typeof filter.value === 'string' && type === 'Default')
+        queryString['mode'] = 'insensitive';
       return this.buildQuery(props, queryString);
     }
   }
@@ -60,40 +62,66 @@ export class AdvancedFilteringService {
     return nestedObject;
   }
 
-  private getQuery(filterOperator, filterValue) {
-    switch (filterOperator) {
-      case 'Contains':
-        return { contains: filterValue };
-      case 'Does Not Contains':
-        return { not: { contains: filterValue } };
-      case 'Is Empty':
-        return { isEmpty: true };
-      case 'Is Not Empty':
-        return { isEmpty: false };
-      case 'Start With':
-        return { startWith: filterValue };
-      case 'End With':
-        return { endWith: filterValue };
-      case 'Is Greater Than Or Equal To':
-        return { gte: filterValue };
-      case 'Is Greater Than':
-        return { gt: filterValue };
-      case 'Is Less Than Or Equal To':
-        return { lte: filterValue };
-      case 'Is Less Than':
-        return { lt: filterValue };
-      case 'Is Equal To':
-        return { equals: filterValue };
-      case 'Is Not Equal To':
-        return { not: { equals: filterValue } };
-      case 'Is Before Or Equal To':
-        return { lte: new Date(filterValue) };
-      case 'Is Before':
-        return { lt: new Date(filterValue) };
-      case 'Is After Or Equal To':
-        return { gte: new Date(filterValue) };
-      case 'Is After':
-        return { gt: new Date(filterValue) };
+  private getQuery(filterOperator, filterType, filterValue) {
+    if (filterType === 'DateTime') {
+      const now = new Date(filterValue);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+
+      switch (filterOperator) {
+        case 'Is Equal To':
+          return { gte: today, lt: tomorrow };
+        case 'Is Before Or Equal To':
+          return { lt: tomorrow };
+        case 'Is Before':
+          return { lt: today };
+        case 'Is After Or Equal To':
+          return { gt: today };
+        case 'Is After':
+          return { gt: tomorrow };
+        case 'Between':
+          const start = new Date(filterValue[0]);
+          const end = new Date(filterValue[1]);
+          const startDate = new Date(
+            start.getFullYear(),
+            start.getMonth(),
+            start.getDate(),
+          );
+          let endDate = new Date(
+            end.getFullYear(),
+            end.getMonth(),
+            end.getDate(),
+          );
+          endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+          return { gte: startDate, lte: endDate };
+      }
+    } else {
+      switch (filterOperator) {
+        case 'Contains':
+          return { contains: filterValue };
+        case 'Does Not Contains':
+          return { not: { contains: filterValue } };
+        case 'Is Empty':
+          return { isEmpty: true };
+        case 'Is Not Empty':
+          return { isEmpty: false };
+        case 'Start With':
+          return { startWith: filterValue };
+        case 'End With':
+          return { endWith: filterValue };
+        case 'Is Greater Than Or Equal To':
+          return { gte: filterValue };
+        case 'Is Greater Than':
+          return { gt: filterValue };
+        case 'Is Less Than Or Equal To':
+          return { lte: filterValue };
+        case 'Is Less Than':
+          return { lt: filterValue };
+        case 'Is Equal To':
+          return { equals: filterValue };
+        case 'Is Not Equal To':
+          return { not: { equals: filterValue } };
+      }
     }
   }
 }
