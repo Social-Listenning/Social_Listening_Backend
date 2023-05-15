@@ -1,3 +1,4 @@
+import { NotifyAgentMessageTypeEnum } from './../../../common/enum/notifyAgentMessageType.enum';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
@@ -310,6 +311,9 @@ export class WorkflowService {
                 workflow.id,
                 data['messageId'],
                 WorkflowNodeType.NotifyAgent,
+                {
+                  notifyAgentMessage: NotifyAgentMessageTypeEnum.Sentiment,
+                },
               );
             }
           }
@@ -347,6 +351,12 @@ export class WorkflowService {
             workflow.id,
             data['messageId'],
             WorkflowNodeType.NotifyAgent,
+            {
+              notifyAgentMessage:
+                data.notifyAgentMessage === NotifyAgentMessageTypeEnum.Intent
+                  ? NotifyAgentMessageTypeEnum.Intent
+                  : NotifyAgentMessageTypeEnum.Workflow,
+            },
           );
           break;
       }
@@ -428,6 +438,7 @@ export class WorkflowService {
             messageId: data.messageId,
             tabId: data.tabId,
             messageType: data.messageType,
+            notifyAgentMessage: data.notifyAgentMessage,
           },
           workflow.tabId,
         );
