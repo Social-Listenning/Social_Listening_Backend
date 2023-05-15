@@ -7,6 +7,6 @@ export class SocialMessageGateway {
   server: Server;
 
   async pushSocialLog(postId: string, roomId: string) {
-    this.server.sockets.to(roomId).emit('messageCome', postId);
+    this.server.sockets.to(roomId).emit('messageCome-SocialLog', postId);
   }
 }
