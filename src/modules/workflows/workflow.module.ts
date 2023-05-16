@@ -12,6 +12,9 @@ import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 import { SocialMessageModule } from '../socialMessage/socialMessage.module';
 import { MessageModule } from '../message/message.module';
 import { SocialSenderModule } from '../socialSender/socialSender.module';
+import { HotQueueService } from './services/hotQueue.service';
+import { WorkflowGateway } from './gateways/workflow.gateway';
+import { HotQueueController } from './controllers/hotQueue.controller';
 
 @Module({
   imports: [
@@ -24,9 +27,11 @@ import { SocialSenderModule } from '../socialSender/socialSender.module';
     MessageModule,
     HttpModule,
   ],
-  controllers: [WorkflowController],
+  controllers: [WorkflowController, HotQueueController],
   providers: [
+    HotQueueService,
     WorkflowService,
+    WorkflowGateway,
     WorkflowNodeService,
     WorkflowEdgeService,
     WorkflowDataService,

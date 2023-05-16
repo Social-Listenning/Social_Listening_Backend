@@ -26,25 +26,26 @@ model Role {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  email        String
-  userName     String
-  fullName     String
-  phoneNumber  String?
-  refreshToken String?
-  password     String
-  role         Role           @relation(fields: [roleId], references: [id])
-  roleId       String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  deleteAt     Boolean        @default(false)
-  isActive     Boolean        @default(false)
-  gender       Gender         @default(Other)
-  socialGroup  SocialGroup?
-  UserInGroup  UserInGroup[]
-  File         File[]
-  Notification Notification[]
-  UserInTab    UserInTab[]
+  id             String           @id @default(uuid())
+  email          String
+  userName       String
+  fullName       String
+  phoneNumber    String?
+  refreshToken   String?
+  password       String
+  role           Role             @relation(fields: [roleId], references: [id])
+  roleId         String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  deleteAt       Boolean          @default(false)
+  isActive       Boolean          @default(false)
+  gender         Gender           @default(Other)
+  socialGroup    SocialGroup?
+  UserInGroup    UserInGroup[]
+  File           File[]
+  Notification   Notification[]
+  UserInTab      UserInTab[]
+  UserInHotQueue UserInHotQueue[]
 
   @@index([email])
   @@index([refreshToken])
@@ -212,14 +213,15 @@ model SocialPost {
 }
 
 model SocialSender {
-  id             String          @id @default(uuid())
+  id             String           @id @default(uuid())
   type           String
   senderId       String
   fullName       String
   avatarUrl      String
   SocialMessage  SocialMessage[]
-  MessageSent    Message[]       @relation("sender")
-  MessageReceive Message[]       @relation("recipient")
+  MessageSent    Message[]        @relation("sender")
+  MessageReceive Message[]        @relation("recipient")
+  UserInHotQueue UserInHotQueue[]
 }
 
 model SocialMessage {
@@ -325,4 +327,15 @@ model WorkflowData {
   flowId    String
   messageId String
   data      String
+}
+
+model UserInHotQueue {
+  id        String       @id @default(uuid())
+  senderId  String
+  sender    SocialSender @relation(fields: [senderId], references: [id])
+  type      String
+  userId    String?
+  supporter User?        @relation(fields: [userId], references: [id])
+  delete    Boolean      @default(false)
+  createdAt DateTime     @default(now())
 }
