@@ -60,7 +60,7 @@ export class NotificationGateway
   async receiveNotification(@MessageBody() notificationId: string) {
     if (!isNaN(Number(notificationId))) {
       const id = Number.parseInt(notificationId);
-      this.notificationService.receiveNotification(id);
+      await this.notificationService.receiveNotification(id);
     }
   }
 
@@ -68,7 +68,7 @@ export class NotificationGateway
   async clickNotification(@MessageBody() notificationId: string) {
     if (!isNaN(Number(notificationId))) {
       const id = Number.parseInt(notificationId);
-      this.notificationService.clickNotification(id);
+      await this.notificationService.clickNotification(id);
     }
   }
 }

@@ -2,15 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { SocialMessageDTO } from '../dtos/socialMessage.dto';
 import { excludeData } from 'src/utils/excludeData';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
 @Injectable()
+@WebSocketGateway()
 export class SocialMessageService {
+  @WebSocketServer()
+  server: Server;
+
   constructor(private prismaService: PrismaService) {}
 
   async saveMessage(message: SocialMessageDTO) {
     const savedMessage = await this.prismaService.socialMessage.create({
       data: message,
     });
+
+    await this.sendMessage(message, message.tabId);
+
     return savedMessage;
   }
 
@@ -72,5 +81,9 @@ export class SocialMessageService {
     });
 
     return message;
+  }
+
+  private async sendMessage(data: any, roomId: string) {
+    this.server.sockets.to(roomId).emit('commentCome', data);
   }
 }

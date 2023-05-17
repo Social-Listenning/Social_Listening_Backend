@@ -4,9 +4,15 @@ import { PrismaService } from 'src/config/database/database.config.service';
 import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
 import { CreateMessageDTO } from '../dtos/message.dto';
 import { SortOrderType } from 'src/common/enum/sortOrderType.enum';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
 
 @Injectable()
+@WebSocketGateway()
 export class MessageService {
+  @WebSocketServer()
+  server: Server;
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly socialSenderService: SocialSenderService,
@@ -30,6 +36,10 @@ export class MessageService {
         });
       }
 
+      await this.sendMessage(
+        { ...message, repliedMessageId: repliedMessageId },
+        data.tabId,
+      );
       return message;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
@@ -146,5 +156,9 @@ export class MessageService {
     });
 
     return message;
+  }
+
+  private async sendMessage(data: any, roomId: string) {
+    this.server.sockets.to(roomId).emit('messageCome', data);
   }
 }

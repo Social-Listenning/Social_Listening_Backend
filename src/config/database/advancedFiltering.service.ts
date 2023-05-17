@@ -25,7 +25,7 @@ export class AdvancedFilteringService {
     const type = filter.filterType;
     const isArray = Array.isArray(filter.value);
 
-    if (isArray && type === 'Default') {
+    if (isArray && type !== 'DateTime') {
       const orArray = { OR: [] };
       filter.value = filter.value.filter((x) => x !== undefined && x !== null);
       filter.value.forEach((value) => {

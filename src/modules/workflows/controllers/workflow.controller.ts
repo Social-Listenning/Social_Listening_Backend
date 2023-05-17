@@ -203,7 +203,10 @@ export class WorkflowController {
         workflow.tabId,
         data.messageType,
         WorkflowNodeType.NotifyAgent,
-        { messageId: data.messageId },
+        {
+          messageId: data.messageId,
+          notifyAgentMessage: data.notifyAgentMessage,
+        },
       );
     } catch (error) {
       result.message = error.message;
