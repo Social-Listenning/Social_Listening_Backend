@@ -20,6 +20,10 @@ import { Helper } from 'src/utils/hepler';
 import { WorkflowDataService } from './workflowData.service';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { HotQueueService } from './hotQueue.service';
+import { MessageService } from 'src/modules/message/services/message.service';
+import { SocialMessageService } from 'src/modules/socialMessage/services/socialMessage.service';
+import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
 
 @Injectable()
 @WebSocketGateway()
@@ -30,10 +34,13 @@ export class WorkflowService {
   constructor(
     private readonly httpService: HttpService,
     private readonly prismaService: PrismaService,
+    private readonly messageService: MessageService,
+    private readonly hotQueueService: HotQueueService,
     private readonly nodeService: WorkflowNodeService,
     private readonly edgeService: WorkflowEdgeService,
     private readonly dataService: WorkflowDataService,
     private readonly variableService: WorkflowVariableService,
+    private readonly socialMessageService: SocialMessageService,
   ) {}
 
   async getAllWorkflow(page) {
@@ -272,6 +279,15 @@ export class WorkflowService {
     data: any,
   ) {
     try {
+      const userSend =
+        type === WorkflowTypeEnum.Message
+          ? await this.messageService.findCommentById(data['messageId'])
+          : await this.socialMessageService.findCommentById(data['messageId']);
+      const willContinue = await this.hotQueueService.findUserInHotQueue(
+        userSend.senderId,
+      );
+      if (willContinue) return;
+
       const workflow = await this.findWorkflowByTabId(tabId, type);
       await this.dataService.updateData(workflow.id, data['messageId'], data);
       const currentNode = await this.nodeService.findNodeByFlowId(
