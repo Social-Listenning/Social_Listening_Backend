@@ -72,8 +72,8 @@ export class MessageService {
     }
   }
 
-  async getAllConversation(tabId: string, networkId: string) {
-    const result = [];
+  async getAllConversation(tabId: string, networkId: string, page: any) {
+    let result = [];
     const listConversation = new Map<string, object>();
 
     try {
@@ -109,6 +109,23 @@ export class MessageService {
         }
       });
 
+      page.filter.map((filter) => {
+        if (filter.props === 'sender.fullName' || filter.props === 'message') {
+          result = this.filterString(
+            result,
+            filter.props,
+            filter.filterOperator,
+            filter.value,
+          );
+        } else {
+          result = this.filterDate(
+            result,
+            filter.props,
+            filter.filterOperator,
+            filter.value,
+          );
+        }
+      });
       return result;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
@@ -160,5 +177,86 @@ export class MessageService {
 
   private async sendMessage(data: any, roomId: string) {
     this.server.sockets.to(roomId).emit('messageCome', data);
+  }
+
+  private filterString(
+    listConversation: any[],
+    props: string,
+    filterType: string,
+    filtervalue: string,
+  ) {
+    return listConversation.filter((conversation) => {
+      const value = this.getObjectValue(conversation, props)
+        ?.toString()
+        ?.toLowerCase();
+      switch (filterType) {
+        case 'Is Empty':
+          return value?.length === 0;
+        case 'Is Not Empty':
+          return value?.length > 0;
+        case 'Contains':
+          return value?.includes(filtervalue.toLowerCase());
+        case 'Does Not Contains':
+          return !value?.includes(filtervalue.toLowerCase());
+      }
+    });
+  }
+
+  private filterDate(
+    listConversation: any[],
+    props: string,
+    filterType: string,
+    value: any,
+  ) {
+    let startDate = new Date();
+    let endDate = new Date();
+
+    const isArray = Array.isArray(value);
+    if (!isArray) {
+      const now = new Date(value);
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    return listConversation.filter((conversation) => {
+      const dateSent = this.getObjectValue(conversation, props);
+      switch (filterType) {
+        case 'Is Equal To':
+          return startDate <= dateSent && dateSent < endDate;
+        case 'Is Before Or Equal To':
+          return dateSent < endDate;
+        case 'Is Before':
+          return dateSent < startDate;
+        case 'Is After Or Equal To':
+          return dateSent >= startDate;
+        case 'Is After':
+          return dateSent >= endDate;
+        case 'Between':
+          const start = new Date(value[0]);
+          const end = new Date(value[1]);
+          startDate = new Date(
+            start.getFullYear(),
+            start.getMonth(),
+            start.getDate(),
+          );
+          endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+          endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+          return startDate <= dateSent && dateSent < endDate;
+      }
+    });
+  }
+
+  private getObjectValue(obj: any, propertyPath: string): any {
+    const properties = propertyPath.split('.');
+    let value: any = obj;
+
+    for (const prop of properties) {
+      value = value[prop];
+      if (value === undefined) {
+        break;
+      }
+    }
+
+    return value;
   }
 }
