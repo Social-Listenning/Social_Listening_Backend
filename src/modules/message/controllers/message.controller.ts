@@ -17,6 +17,7 @@ import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
 import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
 import { SentimentMessageDTO } from 'src/modules/socialMessage/dtos/socialMessage.dto';
+import { ConversationPage } from '../dtos/conversationPage.dto';
 
 @Controller('message')
 export class MessageController {
@@ -109,9 +110,11 @@ export class MessageController {
   async getAllConversation(
     @Req() request: RequestWithUser,
     @Param() { tabId },
+    @Body() page: ConversationPage,
   ) {
     const user = request.user;
-    const result = new ReturnResult<object[]>();
+    const pagedData = new PagedData<object>(page);
+    const result = new ReturnResult<PagedData<object>>();
 
     try {
       const exist = await this.userInTabService.checkUserInTab(user.id, tabId);
@@ -121,11 +124,16 @@ export class MessageController {
       const networkInfo = JSON.parse(tabInfo.SocialNetwork.extendData);
       const sender = await this.socialSenderService.findSender(networkInfo.id);
 
+      // const data = this.advancedFilteringService.createFilter(page);
+
       const listConversation = await this.messageService.getAllConversation(
         tabId,
         sender.id,
+        page,
       );
-      result.result = listConversation;
+      pagedData.data = listConversation;
+      pagedData.page.totalElement = listConversation.length;
+      result.result = pagedData;
     } catch (error) {
       result.message = error.message;
     }

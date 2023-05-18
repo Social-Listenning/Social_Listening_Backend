@@ -93,7 +93,7 @@ export class AdvancedFilteringService {
             end.getDate(),
           );
           endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
-          return { gte: startDate, lte: endDate };
+          return { gte: startDate, lt: endDate };
       }
     } else {
       switch (filterOperator) {
