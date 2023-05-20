@@ -120,6 +120,7 @@ model SocialTab {
   Workflow         Workflow[]
   Message          Message[]
   SocialMessage    SocialMessage[]
+  UserInHotQueue   UserInHotQueue[]
 }
 
 model SocialNetwork {
@@ -332,10 +333,12 @@ model WorkflowData {
 model UserInHotQueue {
   id        String       @id @default(uuid())
   senderId  String
-  sender    SocialSender @relation(fields: [senderId], references: [id])
   type      String
   userId    String?
+  tabId     String
+  tab       SocialTab    @relation(fields: [tabId], references: [id])
   supporter User?        @relation(fields: [userId], references: [id])
+  sender    SocialSender @relation(fields: [senderId], references: [id])
   delete    Boolean      @default(false)
   createdAt DateTime     @default(now())
 }
