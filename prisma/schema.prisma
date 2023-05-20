@@ -121,6 +121,7 @@ model SocialTab {
   Message          Message[]
   SocialMessage    SocialMessage[]
   UserInHotQueue   UserInHotQueue[]
+  HotQueueMessage  HotQueueMessage[]
 }
 
 model SocialNetwork {
@@ -214,15 +215,17 @@ model SocialPost {
 }
 
 model SocialSender {
-  id             String           @id @default(uuid())
-  type           String
-  senderId       String
-  fullName       String
-  avatarUrl      String
-  SocialMessage  SocialMessage[]
-  MessageSent    Message[]        @relation("sender")
-  MessageReceive Message[]        @relation("recipient")
-  UserInHotQueue UserInHotQueue[]
+  id                     String            @id @default(uuid())
+  type                   String
+  senderId               String
+  fullName               String
+  avatarUrl              String
+  SocialMessage          SocialMessage[]
+  MessageSent            Message[]         @relation("sender")
+  MessageReceive         Message[]         @relation("recipient")
+  UserInHotQueue         UserInHotQueue[]
+  HotQueueMessageSent    HotQueueMessage[] @relation("sender")
+  HotQueueMessageReceive HotQueueMessage[] @relation("recipient")
 }
 
 model SocialMessage {
@@ -341,4 +344,18 @@ model UserInHotQueue {
   sender    SocialSender @relation(fields: [senderId], references: [id])
   delete    Boolean      @default(false)
   createdAt DateTime     @default(now())
+}
+
+model HotQueueMessage {
+  id          String       @id @default(uuid())
+  tabId       String
+  messageType String
+  message     String
+  senderId    String
+  recipientId String
+  tab         SocialTab    @relation(fields: [tabId], references: [id])
+  sender      SocialSender @relation("sender", fields: [senderId], references: [id])
+  recipient   SocialSender @relation("recipient", fields: [recipientId], references: [id])
+  delete      Boolean      @default(false)
+  dateCreated DateTime     @default(now())
 }

@@ -1,6 +1,6 @@
 import { NotifyAgentMessageTypeEnum } from './../../../common/enum/notifyAgentMessageType.enum';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, mixin } from '@nestjs/common';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { excludeData } from 'src/utils/excludeData';
@@ -309,6 +309,7 @@ export class WorkflowService {
               nextNode.type,
               {
                 replyInfo: JSON.parse(nextNode.data),
+                notifyAgentMessage: NotifyAgentMessageTypeEnum.Workflow,
               },
             );
           }
@@ -454,10 +455,34 @@ export class WorkflowService {
             messageId: data.messageId,
             tabId: data.tabId,
             messageType: data.messageType,
-            notifyAgentMessage: data.notifyAgentMessage,
+            notifyAgentMessage:
+              data.notifyAgentMessage ?? NotifyAgentMessageTypeEnum.Workflow,
           },
           workflow.tabId,
         );
+
+        if (data.messageType === 'Message') {
+          const messageInfo = await this.messageService.findCommentById(
+            data.messageId,
+          );
+
+          await this.hotQueueService.addToHotQueue({
+            type: 'Not Supported',
+            tabId: data.tabId,
+            senderId: messageInfo.senderId,
+          });
+        } else if (data.messageType === 'Comment') {
+          const messageInfo = await this.socialMessageService.findCommentById(
+            data.messageId,
+          );
+
+          await this.hotQueueService.addToHotQueue({
+            type: 'Not Supported',
+            tabId: data.tabId,
+            senderId: messageInfo.senderId,
+          });
+        }
+
         break;
     }
   }
