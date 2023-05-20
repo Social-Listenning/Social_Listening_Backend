@@ -25,8 +25,8 @@ export class NotificationService {
 
   async getUserFromSocket(socket: Socket) {
     try {
-      // const authToken = socket.handshake.auth.token;
-      const authToken = socket.handshake.headers.authorization;
+      const authToken = socket.handshake.auth.token;
+      // const authToken = socket.handshake.headers.authorization;
       if (!authToken) throw new Error(`Invalid credentials`);
       const userId = await this.authService.getUserFromAuthToken(authToken);
 

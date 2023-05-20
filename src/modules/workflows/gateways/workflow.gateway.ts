@@ -32,4 +32,8 @@ export class WorkflowGateway {
       console.error(error);
     }
   }
+
+  async messageSupport(senderId: string, roomId: string) {
+    this.server.sockets.to(roomId).emit('messageSupport', senderId);
+  }
 }
