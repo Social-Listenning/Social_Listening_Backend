@@ -11,10 +11,19 @@ export class HotQueueService {
     private readonly workflowGateway: WorkflowGateway,
   ) {}
 
-  async findUserInHotQueue(senderId: string, tabId: string) {
+  async findUserInHotQueue(
+    senderId: string,
+    tabId: string,
+    messageType: string,
+  ) {
     try {
       const user = await this.prismaService.userInHotQueue.findFirst({
-        where: { senderId: senderId, tabId: tabId, delete: false },
+        where: {
+          senderId: senderId,
+          tabId: tabId,
+          messageType: messageType,
+          delete: false,
+        },
       });
       return user;
     } catch (error) {
@@ -56,7 +65,11 @@ export class HotQueueService {
 
   async stopHotQueue(data: HotQueueDTO) {
     try {
-      const user = await this.findUserInHotQueue(data.senderId, data.tabId);
+      const user = await this.findUserInHotQueue(
+        data.senderId,
+        data.tabId,
+        data.type,
+      );
       if (!user) throw new Error();
 
       const deletedData = await this.prismaService.userInHotQueue.update({

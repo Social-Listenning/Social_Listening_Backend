@@ -334,16 +334,17 @@ model WorkflowData {
 }
 
 model UserInHotQueue {
-  id        String       @id @default(uuid())
-  senderId  String
-  type      String
-  userId    String?
-  tabId     String
-  tab       SocialTab    @relation(fields: [tabId], references: [id])
-  supporter User?        @relation(fields: [userId], references: [id])
-  sender    SocialSender @relation(fields: [senderId], references: [id])
-  delete    Boolean      @default(false)
-  createdAt DateTime     @default(now())
+  id          String       @id @default(uuid())
+  senderId    String
+  type        String
+  userId      String?
+  tabId       String
+  messageType String
+  tab         SocialTab    @relation(fields: [tabId], references: [id])
+  supporter   User?        @relation(fields: [userId], references: [id])
+  sender      SocialSender @relation(fields: [senderId], references: [id])
+  delete      Boolean      @default(false)
+  createdAt   DateTime     @default(now())
 }
 
 model HotQueueMessage {

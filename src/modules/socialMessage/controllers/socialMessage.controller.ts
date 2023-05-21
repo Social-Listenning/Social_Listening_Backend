@@ -128,7 +128,7 @@ export class SocialMessageController {
           savedMessage.type === 'Comment' ? recipient.id : messageRoot.senderId,
         message: savedMessage.message,
         messageType: 'Comment',
-        messageId: savedMessage.messageId,
+        messageId: savedMessage.id,
       });
 
       result.result = savedMessage;

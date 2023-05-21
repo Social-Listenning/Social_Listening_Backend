@@ -23,6 +23,7 @@ export class HotQueueController {
       const hotQueue = await this.hotQueueService.findUserInHotQueue(
         data.senderId,
         data.tabId,
+        data.messageType,
       );
       if (!hotQueue) {
         throw new Error(`Sender is not supported or is not in hot-queue`);
