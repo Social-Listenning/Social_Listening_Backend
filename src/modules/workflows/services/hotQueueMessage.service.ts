@@ -77,7 +77,9 @@ export class HotQueueMessageService {
           )
         ) {
           const data = {
-            sender: !listNetwork.includes(conversation.senderId)
+            sender: !listConversation.find(
+              (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+            )
               ? conversation.sender
               : conversation.recipient,
             from: conversation.senderId,
