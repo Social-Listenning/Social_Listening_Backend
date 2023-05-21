@@ -1,4 +1,13 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+  forwardRef,
+  Inject,
+} from '@nestjs/common';
 import { MessageService } from '../services/message.service';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
 import { MessageDTO, MessageInConversationDTO } from '../dtos/message.dto';
@@ -18,6 +27,7 @@ import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 import { WorkflowService } from 'src/modules/workflows/services/workflow.service';
 import { SentimentMessageDTO } from 'src/modules/socialMessage/dtos/socialMessage.dto';
 import { ConversationPage } from '../dtos/conversationPage.dto';
+import { HotQueueMessageService } from 'src/modules/workflows/services/hotQueueMessage.service';
 
 @Controller('message')
 export class MessageController {
@@ -27,6 +37,8 @@ export class MessageController {
     private readonly socialTabService: SocialTabService,
     private readonly socialSenderService: SocialSenderService,
     private readonly userInTabService: UserInTabService,
+    @Inject(forwardRef(() => HotQueueMessageService))
+    private readonly hotQueueMessageService: HotQueueMessageService,
     private readonly advancedFilteringService: AdvancedFilteringService,
   ) {}
 
@@ -96,6 +108,15 @@ export class MessageController {
           },
         );
       }
+
+      // Send data to hot-queue
+      await this.hotQueueMessageService.checkThenSaveMessage({
+        tabId: tab.id,
+        senderId: sender.id,
+        recipientId: recipient.id,
+        message: newMessage.message,
+        messageType: 'Message',
+      });
 
       result.result = newMessage;
     } catch (error) {

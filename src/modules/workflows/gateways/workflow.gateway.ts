@@ -7,13 +7,17 @@ import {
 import { Server } from 'socket.io';
 import { HotQueueService } from '../services/hotQueue.service';
 import { HotQueueDTO } from '../dtos/hotQueue.dto';
+import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway()
 export class WorkflowGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly hotQueueService: HotQueueService) {}
+  constructor(
+    @Inject(forwardRef(() => HotQueueService))
+    private readonly hotQueueService: HotQueueService,
+  ) {}
 
   @SubscribeMessage('startHotQueue')
   async startHotQueue(@MessageBody() hotQueueData: HotQueueDTO) {

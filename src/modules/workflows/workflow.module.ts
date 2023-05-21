@@ -15,6 +15,7 @@ import { SocialSenderModule } from '../socialSender/socialSender.module';
 import { HotQueueService } from './services/hotQueue.service';
 import { WorkflowGateway } from './gateways/workflow.gateway';
 import { HotQueueController } from './controllers/hotQueue.controller';
+import { HotQueueMessageService } from './services/hotQueueMessage.service';
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { HotQueueController } from './controllers/hotQueue.controller';
     WorkflowEdgeService,
     WorkflowDataService,
     WorkflowVariableService,
+    HotQueueMessageService,
   ],
-  exports: [WorkflowService],
+  exports: [WorkflowService, HotQueueMessageService],
 })
 export class WorkflowModule {}
