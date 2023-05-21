@@ -81,6 +81,16 @@ export class HotQueueService {
         where: { id: user.id },
         data: { delete: true },
       });
+
+      await this.prismaService.hotQueueMessage.updateMany({
+        where: {
+          senderId: data.senderId,
+          messageType: data.messageType,
+          tabId: data.tabId,
+        },
+        data: { delete: true },
+      });
+
       return deletedData;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);

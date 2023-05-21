@@ -61,7 +61,7 @@ export class HotQueueMessageService {
       });
 
       listMessage.forEach((conversation) => {
-        const userSend = listNetwork.includes(conversation.senderId)
+        const userSend = listNetwork.includes(conversation.sender.senderId)
           ? conversation.senderId
           : conversation.recipientId;
 
@@ -86,6 +86,8 @@ export class HotQueueMessageService {
             message: conversation.message,
             type: conversation.messageType,
             lastSent: conversation.dateCreated,
+            messageId: conversation.messageId,
+            tabId: conversation.tabId,
           };
 
           listConversation.push(dataGrouping);
