@@ -1,6 +1,6 @@
 import { NotifyAgentMessageTypeEnum } from './../../../common/enum/notifyAgentMessageType.enum';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, mixin } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { excludeData } from 'src/utils/excludeData';
@@ -24,6 +24,8 @@ import { HotQueueService } from './hotQueue.service';
 import { MessageService } from 'src/modules/message/services/message.service';
 import { SocialMessageService } from 'src/modules/socialMessage/services/socialMessage.service';
 import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
+import { HotQueueMessageService } from './hotQueueMessage.service';
+import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
 
 @Injectable()
 @WebSocketGateway()
@@ -40,7 +42,9 @@ export class WorkflowService {
     private readonly edgeService: WorkflowEdgeService,
     private readonly dataService: WorkflowDataService,
     private readonly variableService: WorkflowVariableService,
+    private readonly socialSenderService: SocialSenderService,
     private readonly socialMessageService: SocialMessageService,
+    private readonly hotQueueMessageService: HotQueueMessageService,
   ) {}
 
   async getAllWorkflow(page) {
@@ -283,10 +287,14 @@ export class WorkflowService {
         type === WorkflowTypeEnum.Message
           ? await this.messageService.findCommentById(data['messageId'])
           : await this.socialMessageService.findCommentById(data['messageId']);
+
       const willContinue = await this.hotQueueService.findUserInHotQueue(
         userSend.senderId,
+        tabId,
       );
-      if (willContinue) return;
+      if (willContinue) {
+        return;
+      }
 
       const workflow = await this.findWorkflowByTabId(tabId, type);
       await this.dataService.updateData(workflow.id, data['messageId'], data);
@@ -331,6 +339,7 @@ export class WorkflowService {
                 {
                   notifyAgentMessage: NotifyAgentMessageTypeEnum.Sentiment,
                 },
+                true,
               );
             }
           }
@@ -356,6 +365,7 @@ export class WorkflowService {
                 {
                   replyInfo: JSON.parse(nextNode.data),
                 },
+                true,
               );
             }
           }
@@ -431,6 +441,7 @@ export class WorkflowService {
     messageId: string,
     nodeType: string,
     optData = null,
+    callSaveData = false,
   ) {
     const flowData = await this.dataService.getWorkflowData(flowId, messageId);
     const data = { ...JSON.parse(flowData.data), ...optData };
@@ -471,6 +482,16 @@ export class WorkflowService {
             tabId: data.tabId,
             senderId: messageInfo.senderId,
           });
+
+          if (callSaveData) {
+            // await this.hotQueueMessageService.checkThenSaveMessage({
+            //   tabId: data.tabId,
+            //   message: '',
+            //   messageType: '',
+            //   senderId: '',
+            //   recipientId: '',
+            // });
+          }
         } else if (data.messageType === 'Comment') {
           const messageInfo = await this.socialMessageService.findCommentById(
             data.messageId,
@@ -481,6 +502,21 @@ export class WorkflowService {
             tabId: data.tabId,
             senderId: messageInfo.senderId,
           });
+
+          if (callSaveData) {
+            const recipientId = await this.socialSenderService.findSender(
+              data.pageId,
+            );
+
+            await this.hotQueueMessageService.checkThenSaveMessage({
+              tabId: data.tabId,
+              message: data.message,
+              messageId: data.messageId,
+              messageType: data.messageType,
+              senderId: messageInfo.senderId,
+              recipientId: recipientId.id,
+            });
+          }
         }
 
         break;

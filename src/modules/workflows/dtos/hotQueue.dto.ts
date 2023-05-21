@@ -4,3 +4,8 @@ export class HotQueueDTO {
   userId?: string;
   senderId: string;
 }
+
+export class FindSenderHotQueueDTO {
+  tabId: string;
+  senderId: string;
+}

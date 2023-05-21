@@ -29,6 +29,12 @@ export class SocialMessageService {
     });
   }
 
+  async findCommentByCommentId(messageId: string) {
+    return await this.prismaService.socialMessage.findFirst({
+      where: { messageId: messageId },
+    });
+  }
+
   async getRootMessage(messageId: string) {
     const message = await this.findCommentById(messageId);
     if (!message) return message;

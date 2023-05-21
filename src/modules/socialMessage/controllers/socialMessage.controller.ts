@@ -2,10 +2,12 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Req,
   UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { SocialMessageService } from '../services/socialMessage.service';
 import { APIKeyGuard } from 'src/modules/auth/guards/apikey.guard';
@@ -31,6 +33,7 @@ import { WorkflowService } from 'src/modules/workflows/services/workflow.service
 import { WorkflowNodeType } from 'src/common/enum/workflowNode.enum';
 import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
 import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
+import { HotQueueMessageService } from 'src/modules/workflows/services/hotQueueMessage.service';
 
 @Controller('social-message')
 export class SocialMessageController {
@@ -43,6 +46,8 @@ export class SocialMessageController {
     private socialMessageGateway: SocialMessageGateway,
     private workflowService: WorkflowService,
     private socialSenderService: SocialSenderService,
+    @Inject(forwardRef(() => HotQueueMessageService))
+    private readonly hotQueueMessageService: HotQueueMessageService,
   ) {}
 
   @Post('save')
@@ -109,6 +114,22 @@ export class SocialMessageController {
           },
         );
       }
+
+      // Send data to hot-queue
+      const recipient = await this.socialSenderService.findSender(networkId);
+      const messageRoot =
+        await this.socialMessageService.findCommentByCommentId(
+          message.parentId,
+        );
+      await this.hotQueueMessageService.checkThenSaveMessage({
+        tabId: tab.id,
+        senderId: sender.id,
+        recipientId:
+          savedMessage.type === 'Comment' ? recipient.id : messageRoot.senderId,
+        message: savedMessage.message,
+        messageType: 'Comment',
+        messageId: savedMessage.messageId,
+      });
 
       result.result = savedMessage;
     } catch (error) {

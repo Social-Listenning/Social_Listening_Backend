@@ -133,6 +133,13 @@ export class UserInTabService {
     return userInTab;
   }
 
+  async getAllTabWithUser(userId: string) {
+    const listTab = await this.prismaService.userInTab.findMany({
+      where: { userId: userId, delete: false },
+    });
+    return listTab.map((tab) => tab.tabId);
+  }
+
   private async getManagerOfTab(tabId: string) {
     const user = await this.prismaService.userInTab.findFirst({
       where: { tabId: tabId, roleId: this.managerRole.id, delete: false },

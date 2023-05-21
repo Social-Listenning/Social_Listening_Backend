@@ -353,6 +353,7 @@ model HotQueueMessage {
   message     String
   senderId    String
   recipientId String
+  messageId   String?
   tab         SocialTab    @relation(fields: [tabId], references: [id])
   sender      SocialSender @relation("sender", fields: [senderId], references: [id])
   recipient   SocialSender @relation("recipient", fields: [recipientId], references: [id])
