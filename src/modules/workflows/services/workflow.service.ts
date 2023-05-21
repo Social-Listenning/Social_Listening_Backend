@@ -291,6 +291,7 @@ export class WorkflowService {
       const willContinue = await this.hotQueueService.findUserInHotQueue(
         userSend.senderId,
         tabId,
+        type,
       );
       if (willContinue) {
         return;
@@ -480,17 +481,18 @@ export class WorkflowService {
           await this.hotQueueService.addToHotQueue({
             type: 'Not Supported',
             tabId: data.tabId,
+            messageType: data.messageType,
             senderId: messageInfo.senderId,
           });
 
           if (callSaveData) {
-            // await this.hotQueueMessageService.checkThenSaveMessage({
-            //   tabId: data.tabId,
-            //   message: '',
-            //   messageType: '',
-            //   senderId: '',
-            //   recipientId: '',
-            // });
+            await this.hotQueueMessageService.checkThenSaveMessage({
+              tabId: data.tabId,
+              message: data.message,
+              messageType: 'Message',
+              senderId: data.sender.id,
+              recipientId: data.recipient.id,
+            });
           }
         } else if (data.messageType === 'Comment') {
           const messageInfo = await this.socialMessageService.findCommentById(
@@ -500,6 +502,7 @@ export class WorkflowService {
           await this.hotQueueService.addToHotQueue({
             type: 'Not Supported',
             tabId: data.tabId,
+            messageType: data.messageType,
             senderId: messageInfo.senderId,
           });
 

@@ -30,6 +30,7 @@ export class HotQueueMessageService {
       const inHotQueue = await this.hotQueueService.findUserInHotQueue(
         senderCheck,
         data.tabId,
+        data.messageType,
       );
 
       if (inHotQueue) {
@@ -43,7 +44,7 @@ export class HotQueueMessageService {
   async getConversation(listTabs: string[]) {
     try {
       const result = [];
-      const listConversation = new Map<HotQueueConversationGrouping, object>();
+      const listConversation: HotQueueConversationGrouping[] = [];
 
       const listNetwork = await Promise.all(
         listTabs.map(async (tabId) => {
@@ -70,9 +71,13 @@ export class HotQueueMessageService {
           messageId: conversation.messageId,
         };
 
-        if (!listConversation.has(dataGrouping)) {
+        if (
+          !listConversation.find(
+            (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+          )
+        ) {
           const data = {
-            sender: listNetwork.includes(conversation.senderId)
+            sender: !listNetwork.includes(conversation.senderId)
               ? conversation.sender
               : conversation.recipient,
             from: conversation.senderId,
@@ -81,7 +86,7 @@ export class HotQueueMessageService {
             lastSent: conversation.dateCreated,
           };
 
-          listConversation.set(dataGrouping, data);
+          listConversation.push(dataGrouping);
           result.push(data);
         }
       });
