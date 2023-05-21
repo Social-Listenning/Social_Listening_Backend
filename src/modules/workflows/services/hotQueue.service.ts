@@ -46,7 +46,12 @@ export class HotQueueService {
   async startHotQueue(data: HotQueueDTO) {
     try {
       const hotQueueData = await this.prismaService.userInHotQueue.findFirst({
-        where: { delete: false, tabId: data.tabId, senderId: data.senderId },
+        where: {
+          delete: false,
+          tabId: data.tabId,
+          senderId: data.senderId,
+          messageType: data.messageType,
+        },
       });
 
       const createdData = await this.prismaService.userInHotQueue.update({
@@ -68,7 +73,7 @@ export class HotQueueService {
       const user = await this.findUserInHotQueue(
         data.senderId,
         data.tabId,
-        data.type,
+        data.messageType,
       );
       if (!user) throw new Error();
 
