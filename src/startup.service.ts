@@ -17,6 +17,8 @@ import { SettingPerm } from './modules/setting/enum/permission.enum';
 import { SocialTabPerm } from './modules/socialGroups/enum/permission.enum';
 import { SocialSettingPerm } from './modules/socialSetting/enum/permission.enum';
 import { WorkflowPerm } from './modules/workflows/enum/permission.enum';
+import { CommentPerm } from './modules/socialMessage/enum/permission.enum';
+import { MessagePerm } from './modules/message/enum/permission.enum';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -55,12 +57,12 @@ export class AppService implements OnModuleInit {
       {
         group: 'DOMAIN',
         key: 'EMAIL_CONFIRMATION_URL',
-        value: 'http://localhost:3000/auth/confirm-email',
+        value: '',
       },
       {
         group: 'DOMAIN',
         key: 'RECOVERY_PASSWORD_URL',
-        value: 'http://localhost:300/auth/recovery-password',
+        value: '',
       },
       {
         group: 'ACTIVATE_ACCOUNT',
@@ -127,6 +129,8 @@ export class AppService implements OnModuleInit {
       SocialTabPerm,
       SocialSettingPerm,
       WorkflowPerm,
+      CommentPerm,
+      MessagePerm,
     ];
 
     listPerm.forEach((perm) => {

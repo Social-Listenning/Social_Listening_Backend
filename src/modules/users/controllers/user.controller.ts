@@ -375,6 +375,26 @@ export class UserController {
     return result;
   }
 
+  @Post('/unassign')
+  @UseGuards(PermissionGuard(UserPerm.AssignUsers.permission))
+  async unassignUser(
+    @Req() request: RequestWithUser,
+    @Body() data: AssignUserDTO,
+  ) {
+    const user = request.user;
+    const result = new ReturnResult<boolean>();
+    try {
+      const group = await this.groupService.getSocialGroupByManagerId(user.id);
+      if (!group) throw new Error(`You don't have permission to assign users`);
+
+      await this.userInTabService.unassignUsers(data);
+      result.result = true;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
   @Post('/role/update')
   @UseGuards(PermissionGuard(UserPerm.UpdateUser.permission))
   async updateRoleUser(
