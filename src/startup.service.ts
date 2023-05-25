@@ -17,6 +17,8 @@ import { SettingPerm } from './modules/setting/enum/permission.enum';
 import { SocialTabPerm } from './modules/socialGroups/enum/permission.enum';
 import { SocialSettingPerm } from './modules/socialSetting/enum/permission.enum';
 import { WorkflowPerm } from './modules/workflows/enum/permission.enum';
+import { CommentPerm } from './modules/socialMessage/enum/permission.enum';
+import { MessagePerm } from './modules/message/enum/permission.enum';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -127,6 +129,8 @@ export class AppService implements OnModuleInit {
       SocialTabPerm,
       SocialSettingPerm,
       WorkflowPerm,
+      CommentPerm,
+      MessagePerm,
     ];
 
     listPerm.forEach((perm) => {

@@ -9,6 +9,11 @@ export const UserPerm = {
     permission: 'table-user',
     screen: 'Users',
   },
+  GetAllUserInTab: {
+    displayName: 'Get All Users In Tab',
+    permission: 'table-user-in-tab',
+    screen: 'Users',
+  },
   CreateUser: {
     displayName: 'Create User',
     permission: 'create-user',

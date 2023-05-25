@@ -105,6 +105,8 @@ export class NotificationService {
         where: { id: { in: listNotifications.map((x) => x.id) } },
         data: { isClick: true },
       });
+
+      return true;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }

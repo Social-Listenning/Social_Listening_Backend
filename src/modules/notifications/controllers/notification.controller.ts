@@ -56,7 +56,9 @@ export class NotificationController {
     const userId = request.user.id;
     const result = new ReturnResult<boolean>();
     try {
-      const checkReadAll = await this.notificationService.readAllNotification(userId);
+      const checkReadAll = await this.notificationService.readAllNotification(
+        userId,
+      );
       result.result = checkReadAll;
     } catch (error) {
       result.message = ResponseMessage.MESSAGE_TECHNICAL_ISSUE;
