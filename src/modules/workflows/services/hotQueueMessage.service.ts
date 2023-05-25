@@ -61,37 +61,39 @@ export class HotQueueMessageService {
       });
 
       listMessage.forEach((conversation) => {
-        const userSend = listNetwork.includes(conversation.sender.senderId)
-          ? conversation.senderId
-          : conversation.recipientId;
+        if (!listNetwork.includes(conversation.sender.senderId)) {
+          const userSend = !listNetwork.includes(conversation.sender.senderId)
+            ? conversation.senderId
+            : conversation.recipientId;
 
-        const dataGrouping: HotQueueConversationGrouping = {
-          senderId: userSend,
-          messageType: conversation.messageType,
-          messageId: conversation.messageId,
-        };
-
-        if (
-          !listConversation.find(
-            (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-          )
-        ) {
-          const data = {
-            sender: !listConversation.find(
-              (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-            )
-              ? conversation.sender
-              : conversation.recipient,
-            from: conversation.senderId,
-            message: conversation.message,
-            type: conversation.messageType,
-            lastSent: conversation.dateCreated,
+          const dataGrouping: HotQueueConversationGrouping = {
+            senderId: userSend,
+            messageType: conversation.messageType,
             messageId: conversation.messageId,
-            tabId: conversation.tabId,
           };
 
-          listConversation.push(dataGrouping);
-          result.push(data);
+          if (
+            !listConversation.find(
+              (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+            )
+          ) {
+            const data = {
+              sender: !listConversation.find(
+                (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+              )
+                ? conversation.sender
+                : conversation.recipient,
+              from: conversation.senderId,
+              message: conversation.message,
+              type: conversation.messageType,
+              lastSent: conversation.dateCreated,
+              messageId: conversation.messageId,
+              tabId: conversation.tabId,
+            };
+
+            listConversation.push(dataGrouping);
+            result.push(data);
+          }
         }
       });
 

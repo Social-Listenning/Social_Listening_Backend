@@ -7,6 +7,7 @@ import { NotificationDTO } from '../dtos/notification.dto';
 import { NotificationQueueService } from 'src/modules/queue/services/notification.queue.service';
 import { plainToClass } from 'class-transformer';
 import { NotificationModel } from '../model/notification.model';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 
 @Injectable()
 @WebSocketGateway()
@@ -92,6 +93,21 @@ export class NotificationService {
     return await this.prismaService.notification.count({
       where: { userId: userId },
     });
+  }
+
+  async readAllNotification(userId: string) {
+    try {
+      const listNotifications = await this.prismaService.notification.findMany({
+        where: { userId: userId },
+      });
+
+      await this.prismaService.notification.updateMany({
+        where: { id: { in: listNotifications.map((x) => x.id) } },
+        data: { isClick: true },
+      });
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
   }
 
   private async sendNotification(notification) {
