@@ -3,6 +3,7 @@ import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { PrismaService } from 'src/config/database/database.config.service';
 import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.service';
 import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
+import { DashboardStatisticPercentDTO } from '../dto/dashBoardStatistic.dto';
 
 @Injectable()
 export class DashboardService {
@@ -29,13 +30,32 @@ export class DashboardService {
         dateEnd.getDate(),
       );
       // Get Data with hour
-      if (startDate === endDate) {
+      if (startDate.toISOString() === endDate.toISOString()) {
+        endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+        const listComment = await this.countCommentPerHour(
+          tabId,
+          startDate,
+          endDate,
+        );
+        const listMessage = await this.countMessagePerHour(
+          tabId,
+          sender.id,
+          startDate,
+          endDate,
+        );
+        const result = this.mergeData(listComment, listMessage, 1);
+        return result;
       }
       // Get Data with date
       else {
         endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
-        const listComment = await this.countCommentPerDay(startDate, endDate);
+        const listComment = await this.countCommentPerDay(
+          tabId,
+          startDate,
+          endDate,
+        );
         const listMessage = await this.countMessagePerDay(
+          tabId,
           sender.id,
           startDate,
           endDate,
@@ -48,13 +68,128 @@ export class DashboardService {
     }
   }
 
-  private async countCommentPerDay(startDate: Date, endDate: Date) {
+  async getPieChart(tabId: string, dateStart: Date, dateEnd: Date) {
+    try {
+      const tabWithInfo = await this.socialTabService.getSocialTabInfo(tabId);
+      const networkInfo = JSON.parse(tabWithInfo.SocialNetwork.extendData);
+
+      const sender = await this.socialSenderService.findSender(networkInfo.id);
+      const startDate = new Date(
+        dateStart.getFullYear(),
+        dateStart.getMonth(),
+        dateStart.getDate(),
+      );
+      let endDate = new Date(
+        dateEnd.getFullYear(),
+        dateEnd.getMonth(),
+        dateEnd.getDate(),
+      );
+
+      endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
+      const result: DashboardStatisticPercentDTO =
+        new DashboardStatisticPercentDTO();
+      result.totalComment = await this.countComment(tabId, startDate, endDate);
+      result.totalMessage = await this.countMessage(
+        sender.id,
+        tabId,
+        startDate,
+        endDate,
+      );
+      result.hotQueueComment = await this.countHotQueue(
+        sender.id,
+        tabId,
+        'Comment',
+        startDate,
+        endDate,
+      );
+      result.hotQueueMessage = await this.countHotQueue(
+        sender.id,
+        tabId,
+        'Message',
+        startDate,
+        endDate,
+      );
+      return result;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  private async countComment(tabId: string, startDate: Date, endDate: Date) {
+    try {
+      const countComment = await this.prismaService.socialMessage.count({
+        where: {
+          AND: [
+            { type: { not: { equals: 'Bot' } } },
+            { type: { not: { startsWith: 'Agent' } } },
+          ],
+          tabId: tabId,
+          createdAt: { gte: startDate, lt: endDate },
+        },
+      });
+
+      return countComment;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  private async countMessage(
+    senderId: string,
+    tabId: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    try {
+      const countComment = await this.prismaService.message.count({
+        where: {
+          tabId: tabId,
+          senderId: { not: { equals: senderId } },
+          createdAt: { gte: startDate, lt: endDate },
+        },
+      });
+
+      return countComment;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  private async countHotQueue(
+    senderId: string,
+    tabId: string,
+    messageType: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    try {
+      const countData = await this.prismaService.hotQueueMessage.count({
+        where: {
+          tabId: tabId,
+          messageType: messageType,
+          senderId: { not: { equals: senderId } },
+          dateCreated: { gte: startDate, lt: endDate },
+        },
+      });
+
+      return countData;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  private async countCommentPerDay(
+    tabId: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
     const comments = await this.prismaService.socialMessage.findMany({
       where: {
         AND: [
           { type: { not: { equals: 'Bot' } } },
           { type: { not: { startsWith: 'Agent' } } },
         ],
+        tabId: tabId,
         createdAt: { gte: startDate, lt: endDate },
       },
       select: {
@@ -78,12 +213,14 @@ export class DashboardService {
   }
 
   private async countMessagePerDay(
+    tabId: string,
     senderId: string,
     startDate: Date,
     endDate: Date,
   ) {
     const messages = await this.prismaService.message.findMany({
       where: {
+        tabId: tabId,
         senderId: { not: { equals: senderId } },
         createdAt: { gte: startDate, lt: endDate },
       },
@@ -107,7 +244,74 @@ export class DashboardService {
     }));
   }
 
-  private mergeData(listComment: any[], listMessage: any[]) {
+  private async countCommentPerHour(
+    tabId: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    const comments = await this.prismaService.socialMessage.findMany({
+      where: {
+        AND: [
+          { type: { not: { equals: 'Bot' } } },
+          { type: { not: { startsWith: 'Agent' } } },
+        ],
+        tabId: tabId,
+        createdAt: { gte: startDate, lt: endDate },
+      },
+      select: {
+        createdAt: true,
+      },
+    });
+
+    const commentsByDay = comments.reduce((arr, comment) => {
+      const date = comment.createdAt.getHours();
+
+      if (!arr[date]) arr[date] = 0;
+      arr[date]++;
+
+      return arr;
+    }, {});
+
+    return Object.entries(commentsByDay).map(([hour, count]) => ({
+      hour,
+      count,
+    }));
+  }
+
+  private async countMessagePerHour(
+    tabId: string,
+    senderId: string,
+    startDate: Date,
+    endDate: Date,
+  ) {
+    const messages = await this.prismaService.message.findMany({
+      where: {
+        senderId: { not: { equals: senderId } },
+        createdAt: { gte: startDate, lt: endDate },
+      },
+      select: {
+        createdAt: true,
+      },
+    });
+
+    const messagesByDay = messages.reduce((arr, message) => {
+      const date = message.createdAt.getHours();
+
+      if (!arr[date]) arr[date] = 0;
+      arr[date]++;
+
+      return arr;
+    }, {});
+
+    return Object.entries(messagesByDay).map(([hour, count]) => ({
+      hour,
+      count,
+    }));
+  }
+
+  private mergeData(listComment: any[], listMessage: any[], type = 0) {
+    const property = type === 0 ? 'date' : 'hour';
+
     const comments = listComment.map((value) => {
       return { ...value, type: 'Comment' };
     });
@@ -117,18 +321,19 @@ export class DashboardService {
     const mergeArray = [...comments, ...messages];
 
     const resultReturn = mergeArray.reduce((arr, item) => {
-      if (!arr[item.date]) {
-        arr[item.date] = {
-          date: item.date,
+      if (!arr[item[property]]) {
+        arr[item[property]] = {
+          // date: item[property],
           commentCount: 0,
           messageCount: 0,
         };
+        arr[item[property]][`${property}`] = item[property];
       }
 
       if (item.type === 'Comment') {
-        arr[item.date].commentCount += item.count;
+        arr[item[property]].commentCount += item.count;
       } else if (item.type === 'Message') {
-        arr[item.date].messageCount += item.count;
+        arr[item[property]].messageCount += item.count;
       }
 
       return arr;

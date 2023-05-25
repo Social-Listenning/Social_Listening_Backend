@@ -4,9 +4,10 @@ import { DashboardController } from './controller/dashboard.controller';
 import { DashboardService } from './service/dashboard.service';
 import { SocialGroupModule } from '../socialGroups/socialGroup.module';
 import { SocialSenderModule } from '../socialSender/socialSender.module';
+import { UserModule } from '../users/user.module';
 
 @Module({
-  imports: [PrismaModule, SocialGroupModule, SocialSenderModule],
+  imports: [PrismaModule, SocialGroupModule, SocialSenderModule, UserModule],
   controllers: [DashboardController],
   providers: [DashboardService],
   exports: [DashboardService],
