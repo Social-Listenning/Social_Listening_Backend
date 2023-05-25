@@ -6,6 +6,7 @@ import { UpdateRoleUserDTO } from '../dtos/updateRoleUser.dto';
 import { SocialLogService } from 'src/modules/socialLogs/services/socialLog.service';
 import { UserService } from './user.service';
 import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.service';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 
 @Injectable()
 export class UserInTabService {
@@ -49,6 +50,18 @@ export class UserInTabService {
     return dataCreated;
   }
 
+  async removeUserFromTab(userInTabId: number) {
+    try {
+      await this.prismaService.userInTab.update({
+        where: { id: userInTabId },
+        data: { delete: true },
+      });
+      return true;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
   async assignUsers(data: AssignUserDTO) {
     const listUser = data.users;
     const listTab = data.tabs;
@@ -72,19 +85,54 @@ export class UserInTabService {
 
     for (const userId of listUser) {
       for (const tabId of listTab) {
-        try {
-          await this.addUserToTab(userId, tabId, role.id);
+        if (!this.checkUserInTab(userId, tabId)) {
+          try {
+            await this.addUserToTab(userId, tabId, role.id);
 
-          const tab = fakeDB[tabId];
-          const user = fakeDB[userId];
+            const tab = fakeDB[tabId];
+            const user = fakeDB[userId];
 
-          await this.socialLogService.saveSocialLog({
-            tabId: tabId,
-            title: 'Add User to Tab',
-            body: `User #${user.userName} is added to tab #${tab.name}`,
-            activity: 'Add User',
-          });
-        } catch (error) {}
+            await this.socialLogService.saveSocialLog({
+              tabId: tabId,
+              title: 'Add User to Tab',
+              body: `User #${user.userName} is added to tab #${tab.name}`,
+              activity: 'Add User',
+            });
+          } catch (error) {}
+        }
+      }
+    }
+  }
+
+  async unassignUsers(data: AssignUserDTO) {
+    const listUser = data.users;
+    const listTab = data.tabs;
+    const fakeDB = new Map<string, object>();
+
+    const role = await this.roleService.getRoleByRoleName('SUPPORTER');
+
+    await Promise.all(
+      listUser.map(async (userId) => {
+        const user = await this.userService.getUserById(userId);
+        fakeDB[userId] = user;
+      }),
+    );
+
+    await Promise.all(
+      listTab.map(async (tabId) => {
+        const tab = await this.socialTabService.getSocialTabById(tabId);
+        fakeDB[tabId] = tab;
+      }),
+    );
+
+    for (const userId of listUser) {
+      for (const tabId of listTab) {
+        const check = await this.checkUserInTab(userId, tabId);
+        if (check) {
+          try {
+            await this.removeUserFromTab(check.id);
+          } catch (error) {}
+        }
       }
     }
   }
@@ -128,7 +176,7 @@ export class UserInTabService {
 
   async checkUserInTab(userId: string, tabId: string) {
     const userInTab = await this.prismaService.userInTab.findFirst({
-      where: { tabId: tabId, userId: userId },
+      where: { tabId: tabId, userId: userId, delete: false },
     });
     return userInTab;
   }
