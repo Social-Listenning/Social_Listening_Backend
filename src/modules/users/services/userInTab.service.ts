@@ -85,7 +85,8 @@ export class UserInTabService {
 
     for (const userId of listUser) {
       for (const tabId of listTab) {
-        if (!this.checkUserInTab(userId, tabId)) {
+        const check = await this.checkUserInTab(userId, tabId);
+        if (!check) {
           try {
             await this.addUserToTab(userId, tabId, role.id);
 
@@ -108,8 +109,6 @@ export class UserInTabService {
     const listUser = data.users;
     const listTab = data.tabs;
     const fakeDB = new Map<string, object>();
-
-    const role = await this.roleService.getRoleByRoleName('SUPPORTER');
 
     await Promise.all(
       listUser.map(async (userId) => {
