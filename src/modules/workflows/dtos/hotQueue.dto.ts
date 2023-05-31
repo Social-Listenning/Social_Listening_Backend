@@ -4,6 +4,7 @@ export class HotQueueDTO {
   userId?: string;
   senderId: string;
   messageType: string;
+  reason: string;
 }
 
 export class FindSenderHotQueueDTO {

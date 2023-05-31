@@ -345,6 +345,7 @@ model UserInHotQueue {
   sender      SocialSender @relation(fields: [senderId], references: [id])
   delete      Boolean      @default(false)
   createdAt   DateTime     @default(now())
+  reason      String?
 }
 
 model HotQueueMessage {

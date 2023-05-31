@@ -483,6 +483,8 @@ export class WorkflowService {
             tabId: data.tabId,
             messageType: data.messageType,
             senderId: messageInfo.senderId,
+            reason:
+              data.notifyAgentMessage ?? NotifyAgentMessageTypeEnum.Workflow,
           });
 
           if (callSaveData) {
@@ -504,6 +506,8 @@ export class WorkflowService {
             tabId: data.tabId,
             messageType: data.messageType,
             senderId: messageInfo.senderId,
+            reason:
+              data.notifyAgentMessage ?? NotifyAgentMessageTypeEnum.Workflow,
           });
 
           if (callSaveData) {

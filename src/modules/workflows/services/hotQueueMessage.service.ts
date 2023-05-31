@@ -60,42 +60,56 @@ export class HotQueueMessageService {
         orderBy: { dateCreated: SortOrderType.DESC },
       });
 
-      listMessage.forEach((conversation) => {
-        if (!listNetwork.includes(conversation.sender.senderId)) {
-          const userSend = !listNetwork.includes(conversation.sender.senderId)
-            ? conversation.senderId
-            : conversation.recipientId;
+      await Promise.all(
+        listMessage.map(async (conversation) => {
+          if (!listNetwork.includes(conversation.sender.senderId)) {
+            const userSend = !listNetwork.includes(conversation.sender.senderId)
+              ? conversation.senderId
+              : conversation.recipientId;
 
-          const dataGrouping: HotQueueConversationGrouping = {
-            senderId: userSend,
-            messageType: conversation.messageType,
-            messageId: conversation.messageId,
-          };
-
-          if (
-            !listConversation.find(
-              (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-            )
-          ) {
-            const data = {
-              sender: !listConversation.find(
-                (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-              )
-                ? conversation.sender
-                : conversation.recipient,
-              from: conversation.senderId,
-              message: conversation.message,
-              type: conversation.messageType,
-              lastSent: conversation.dateCreated,
+            const dataGrouping: HotQueueConversationGrouping = {
+              senderId: userSend,
+              messageType: conversation.messageType,
               messageId: conversation.messageId,
-              tabId: conversation.tabId,
             };
 
-            listConversation.push(dataGrouping);
-            result.push(data);
+            if (
+              !listConversation.find(
+                (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+              )
+            ) {
+              const data = {
+                sender: !listConversation.find(
+                  (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+                )
+                  ? conversation.sender
+                  : conversation.recipient,
+                from: conversation.senderId,
+                message: conversation.message,
+                type: conversation.messageType,
+                lastSent: conversation.dateCreated,
+                messageId: conversation.messageId,
+                tabId: conversation.tabId,
+              };
+
+              const supportStatus =
+                await this.hotQueueService.findUserInHotQueue(
+                  data.sender.id,
+                  data.tabId,
+                  data.type,
+                );
+
+              listConversation.push(dataGrouping);
+              result.push({
+                ...data,
+                userSupportId: supportStatus.userId,
+                status: supportStatus.type,
+                reason: supportStatus.reason,
+              });
+            }
           }
-        }
-      });
+        }),
+      );
 
       return result;
     } catch (error) {

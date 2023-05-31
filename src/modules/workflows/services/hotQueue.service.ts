@@ -87,10 +87,10 @@ export class HotQueueService {
           OR: [
             {
               senderId: data.senderId,
-            }, 
+            },
             {
               recipientId: data.senderId,
-            }
+            },
           ],
           messageType: data.messageType,
           tabId: data.tabId,
