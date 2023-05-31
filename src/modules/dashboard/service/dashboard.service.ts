@@ -31,35 +31,43 @@ export class DashboardService {
       );
       // Get Data with hour
       if (startDate.toISOString() === endDate.toISOString()) {
+        let listComment = [];
+        let listMessage = [];
         endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
-        const listComment = await this.countCommentPerHour(
+        listComment = await this.countCommentPerHour(
           tabId,
           startDate,
           endDate,
         );
-        const listMessage = await this.countMessagePerHour(
-          tabId,
-          sender.id,
-          startDate,
-          endDate,
-        );
+        if (sender){
+          listMessage = await this.countMessagePerHour(
+            tabId,
+            sender.id,
+            startDate,
+            endDate,
+          );
+        }
         const result = this.mergeData(listComment, listMessage, 1);
         return result;
       }
       // Get Data with date
       else {
+        let listComment = [];
+        let listMessage = [];
         endDate = new Date(endDate.getTime() + 24 * 60 * 60 * 1000);
-        const listComment = await this.countCommentPerDay(
+        listComment = await this.countCommentPerDay(
           tabId,
           startDate,
           endDate,
         );
-        const listMessage = await this.countMessagePerDay(
-          tabId,
-          sender.id,
-          startDate,
-          endDate,
-        );
+        if (sender){
+          listMessage = await this.countMessagePerDay(
+            tabId,
+            sender.id,
+            startDate,
+            endDate,
+          );
+        }
         const result = this.mergeData(listComment, listMessage);
         return result;
       }
@@ -89,26 +97,26 @@ export class DashboardService {
       const result: DashboardStatisticPercentDTO =
         new DashboardStatisticPercentDTO();
       result.totalComment = await this.countComment(tabId, startDate, endDate);
-      result.totalMessage = await this.countMessage(
+      result.totalMessage = (sender) ? await this.countMessage(
         sender.id,
         tabId,
         startDate,
         endDate,
-      );
-      result.hotQueueComment = await this.countHotQueue(
+      ) : 0;
+      result.hotQueueComment = (sender) ? await this.countHotQueue(
         sender.id,
         tabId,
         'Comment',
         startDate,
         endDate,
-      );
-      result.hotQueueMessage = await this.countHotQueue(
+      ) : 0;
+      result.hotQueueMessage = (sender) ?  await this.countHotQueue(
         sender.id,
         tabId,
         'Message',
         startDate,
         endDate,
-      );
+      ) : 0;
       return result;
     } catch (error) {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);

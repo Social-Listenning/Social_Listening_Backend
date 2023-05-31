@@ -84,7 +84,14 @@ export class HotQueueService {
 
       await this.prismaService.hotQueueMessage.updateMany({
         where: {
-          senderId: data.senderId,
+          OR: [
+            {
+              senderId: data.senderId,
+            }, 
+            {
+              recipientId: data.senderId,
+            }
+          ],
           messageType: data.messageType,
           tabId: data.tabId,
         },

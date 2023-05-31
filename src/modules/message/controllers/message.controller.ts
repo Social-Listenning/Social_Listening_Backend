@@ -146,12 +146,15 @@ export class MessageController {
       const sender = await this.socialSenderService.findSender(networkInfo.id);
 
       // const data = this.advancedFilteringService.createFilter(page);
+      let listConversation = [];
 
-      const listConversation = await this.messageService.getAllConversation(
-        tabId,
-        sender.id,
-        page,
-      );
+      if (sender){
+        listConversation = await this.messageService.getAllConversation(
+          tabId,
+          sender.id,
+          page,
+        );
+      }
       pagedData.data = listConversation;
       pagedData.page.totalElement = listConversation.length;
       result.result = pagedData;
