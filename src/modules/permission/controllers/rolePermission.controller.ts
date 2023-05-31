@@ -1,6 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { RolePermissionService } from '../services/rolePermission.service';
 import {
+  RemoveListRolePermissionDTO,
   RemoveRolePermissionDTO,
   RolePermissionDTO,
 } from '../dtos/rolePermission.dto';
@@ -123,6 +124,20 @@ export class PermissionController {
       } else throw new Error();
     } catch (error) {
       result.message = `The role permission is not existed or deleted.`;
+    }
+    return result;
+  }
+
+  @Post('remove-all')
+  @UseGuards(PermissionGuard(PermissionPerm.RemoveListPermission.permission))
+  async removeListRolePermission(@Body() data: RemoveListRolePermissionDTO) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const removeResult =
+        await this.rolePermissionService.removeListRolePermission(data);
+      result.result = removeResult;
+    } catch (error) {
+      result.message = `Something went wrong. Please try again!`;
     }
     return result;
   }

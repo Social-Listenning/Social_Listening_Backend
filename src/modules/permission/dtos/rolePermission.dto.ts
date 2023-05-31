@@ -7,3 +7,7 @@ export class RemoveRolePermissionDTO {
   roleId: string;
   permissionId: string;
 }
+
+export class RemoveListRolePermissionDTO {
+  listRolePermission: RemoveRolePermissionDTO[];
+}
