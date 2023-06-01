@@ -35,6 +35,7 @@ import { UpdateRoleUserDTO } from '../dtos/updateRoleUser.dto';
 import { FileContentResult } from 'src/common/models/file/fileContentResult.dto';
 import { exportExcelFile } from 'src/utils/exportFile';
 import { SocialTabService } from 'src/modules/socialGroups/services/socialTab.service';
+import { Helper } from 'src/utils/hepler';
 
 @Controller('user')
 export class UserController {
@@ -207,6 +208,33 @@ export class UserController {
         };
       });
       data.filter.AND = data.filter.AND.map((query) => {
+        const paramCheck = Object.keys(query)[0];
+        if (paramCheck === 'OR') {
+          const subParam = query[paramCheck];
+          const key = Object.keys(Object.values(subParam)[0]);
+          if (key.includes('gender')) {
+            const newParam = subParam.map((value) => {
+              if (!value.gender.not) {
+                return {
+                  gender: {
+                    equals: Helper.getGender(value.gender.equals),
+                    // mode: 'insensitive',
+                  },
+                };
+              } else {
+                return {
+                  gender: {
+                    not: {
+                      equals: Helper.getGender(value.gender.not.equals),
+                      // mode: 'insensitive',
+                    },
+                  },
+                };
+              }
+            });
+            query = { OR: newParam };
+          }
+        }
         return {
           user: query,
         };

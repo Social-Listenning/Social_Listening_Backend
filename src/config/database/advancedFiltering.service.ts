@@ -102,9 +102,9 @@ export class AdvancedFilteringService {
         case 'Does Not Contains':
           return { not: { contains: filterValue } };
         case 'Is Empty':
-          return { equals: null, notEmpty: true };
+          return null;
         case 'Is Not Empty':
-          return { not: { equals: null } };
+          return { not: null };
         case 'Start With':
           return { startWith: filterValue };
         case 'End With':
