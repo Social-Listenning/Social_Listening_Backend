@@ -77,8 +77,10 @@ model Role_Permission {
 }
 
 model Token {
-  id    String @id @default(uuid())
-  token String
+  id          String   @id @default(uuid())
+  token       String
+  dateExpires DateTime @default(now())
+  deleted     Boolean  @default(false)
 }
 
 model ActivityLog {

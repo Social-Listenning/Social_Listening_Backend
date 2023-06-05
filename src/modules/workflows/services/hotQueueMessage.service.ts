@@ -55,7 +55,11 @@ export class HotQueueMessageService {
       );
 
       const listMessage = await this.prismaService.hotQueueMessage.findMany({
-        where: { tabId: { in: listTabs }, delete: false },
+        where: {
+          tabId: { in: listTabs },
+          delete: false,
+          tab: { delete: false },
+        },
         include: { sender: true, recipient: true },
         orderBy: { dateCreated: SortOrderType.DESC },
       });
@@ -75,14 +79,12 @@ export class HotQueueMessageService {
 
             const checked = !listConversation.find(
               (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-            )
-            
+            );
+
             if (checked) {
               listConversation.push(dataGrouping);
               const data = {
-                sender: checked
-                  ? conversation.sender
-                  : conversation.recipient,
+                sender: checked ? conversation.sender : conversation.recipient,
                 from: conversation.senderId,
                 message: conversation.message,
                 type: conversation.messageType,

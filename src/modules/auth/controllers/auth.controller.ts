@@ -56,6 +56,18 @@ export class AuthController {
     return result;
   }
 
+  @Post('/validate-token/:tokenId')
+  async validateToken(@Param() { tokenId }) {
+    const result = new ReturnResult<boolean>();
+    try {
+      const validateToken = await this.tokenService.validateToken(tokenId);
+      result.result = validateToken;
+    } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
   @HttpCode(200)
   @UseGuards(LocalAuthGuard)
   @Post('/log-in')

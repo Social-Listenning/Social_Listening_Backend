@@ -27,7 +27,7 @@ async function bootstrap() {
   }
 
   if (httpsOptions) {
-    app = await NestFactory.create(AppModule, { httpsOptions });
+    app = await NestFactory.create(AppModule, { cors: true, httpsOptions });
   } else {
     app = await NestFactory.create(AppModule, { cors: true });
   }
