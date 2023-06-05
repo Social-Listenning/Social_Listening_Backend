@@ -26,6 +26,7 @@ import { SocialMessageService } from 'src/modules/socialMessage/services/socialM
 import { WorkflowTypeEnum } from 'src/common/enum/workflowType.enum';
 import { HotQueueMessageService } from './hotQueueMessage.service';
 import { SocialSenderService } from 'src/modules/socialSender/services/socialSender.service';
+import { SettingService } from 'src/modules/setting/service/setting.service';
 
 @Injectable()
 @WebSocketGateway()
@@ -36,6 +37,7 @@ export class WorkflowService {
   constructor(
     private readonly httpService: HttpService,
     private readonly prismaService: PrismaService,
+    private readonly settingService: SettingService,
     private readonly messageService: MessageService,
     private readonly hotQueueService: HotQueueService,
     private readonly nodeService: WorkflowNodeService,
@@ -385,7 +387,7 @@ export class WorkflowService {
                   ? NotifyAgentMessageTypeEnum.Intent
                   : NotifyAgentMessageTypeEnum.Workflow,
             },
-            true
+            true,
           );
           break;
       }
@@ -449,18 +451,19 @@ export class WorkflowService {
     const flowData = await this.dataService.getWorkflowData(flowId, messageId);
     const data = { ...JSON.parse(flowData.data), ...optData };
 
+    const URI = await this.settingService.getSettingByKeyAndGroup(
+      'DOMAIN_BOT',
+      'DOMAIN',
+    );
+
     switch (nodeType) {
       case WorkflowNodeType.ReceiveMessage:
         break;
       case WorkflowNodeType.SentimentAnalysis:
-        this.httpService
-          .post(`http://localhost:8000/sentiment`, data)
-          .subscribe();
+        this.httpService.post(`${URI}/sentiment`, data).subscribe();
         break;
       case WorkflowNodeType.ResponseMessage:
-        this.httpService
-          .post(`http://localhost:8000/reply-message`, data)
-          .subscribe();
+        this.httpService.post(`${URI}/reply-message`, data).subscribe();
         break;
       case WorkflowNodeType.NotifyAgent:
         const workflow = await this.getWorkflowById(flowId);
@@ -532,7 +535,7 @@ export class WorkflowService {
             messageType: data.messageType,
             notifyAgentMessage:
               data.notifyAgentMessage ?? NotifyAgentMessageTypeEnum.Workflow,
-            sender: sender
+            sender: sender,
           },
           workflow.tabId,
         );

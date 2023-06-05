@@ -121,24 +121,24 @@ export class AppService implements OnModuleInit {
       },
       {
         group: 'DOMAIN',
-        key: "DOMAIN_BOT_CONNECTOR",
-        value: ''
+        key: 'DOMAIN_BOT_CONNECTOR',
+        value: '',
       },
       {
         group: 'DOMAIN',
-        key: "DOMAIN_BOT",
-        value: ''
+        key: 'DOMAIN_BOT',
+        value: '',
       },
       {
         group: 'DOMAIN',
-        key: "DOMAIN_BACKEND",
-        value: ''
+        key: 'DOMAIN_BACKEND',
+        value: '',
       },
       {
         group: 'DOMAIN',
-        key: "DOMAIN_FRONTEND",
-        value: ''
-      }
+        key: 'DOMAIN_FRONTEND',
+        value: '',
+      },
     ];
     const listPerm = [
       UserPerm,

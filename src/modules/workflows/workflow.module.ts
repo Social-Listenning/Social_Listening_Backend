@@ -16,6 +16,7 @@ import { HotQueueService } from './services/hotQueue.service';
 import { WorkflowGateway } from './gateways/workflow.gateway';
 import { HotQueueController } from './controllers/hotQueue.controller';
 import { HotQueueMessageService } from './services/hotQueueMessage.service';
+import { SettingModule } from '../setting/setting.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { HotQueueMessageService } from './services/hotQueueMessage.service';
     forwardRef(() => MessageModule),
     SocialSenderModule,
     MessageModule,
+    SettingModule,
     HttpModule,
   ],
   controllers: [WorkflowController, HotQueueController],
