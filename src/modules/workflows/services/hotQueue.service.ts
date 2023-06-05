@@ -86,14 +86,15 @@ export class HotQueueService {
         where: {
           OR: [
             {
-              senderId: data.senderId,
+              senderId: user.senderId,
             },
             {
-              recipientId: data.senderId,
+              recipientId: user.senderId,
             },
           ],
           messageType: data.messageType,
           tabId: data.tabId,
+          delete: false
         },
         data: { delete: true },
       });

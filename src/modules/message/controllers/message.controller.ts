@@ -116,6 +116,7 @@ export class MessageController {
         recipientId: recipient.id,
         message: newMessage.message,
         messageType: 'Message',
+        messageId: message.messageId,
       });
 
       result.result = newMessage;

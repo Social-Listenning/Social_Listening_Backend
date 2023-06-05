@@ -385,6 +385,7 @@ export class WorkflowService {
                   ? NotifyAgentMessageTypeEnum.Intent
                   : NotifyAgentMessageTypeEnum.Workflow,
             },
+            true
           );
           break;
       }
@@ -444,6 +445,7 @@ export class WorkflowService {
     optData = null,
     callSaveData = false,
   ) {
+    let senderID = null;
     const flowData = await this.dataService.getWorkflowData(flowId, messageId);
     const data = { ...JSON.parse(flowData.data), ...optData };
 
@@ -462,21 +464,13 @@ export class WorkflowService {
         break;
       case WorkflowNodeType.NotifyAgent:
         const workflow = await this.getWorkflowById(flowId);
-        await this.notifyAgent(
-          {
-            messageId: data.messageId,
-            tabId: data.tabId,
-            messageType: data.messageType,
-            notifyAgentMessage:
-              data.notifyAgentMessage ?? NotifyAgentMessageTypeEnum.Workflow,
-          },
-          workflow.tabId,
-        );
 
         if (data.messageType === 'Message') {
           const messageInfo = await this.messageService.findCommentById(
             data.messageId,
           );
+
+          senderID = messageInfo.senderId;
 
           await this.hotQueueService.addToHotQueue({
             type: 'Not Supported',
@@ -494,12 +488,15 @@ export class WorkflowService {
               messageType: 'Message',
               senderId: data.sender.id,
               recipientId: data.recipient.id,
+              messageId: data.messageId,
             });
           }
         } else if (data.messageType === 'Comment') {
           const messageInfo = await this.socialMessageService.findCommentById(
             data.messageId,
           );
+
+          senderID = messageInfo.senderId;
 
           await this.hotQueueService.addToHotQueue({
             type: 'Not Supported',
@@ -525,6 +522,20 @@ export class WorkflowService {
             });
           }
         }
+
+        const sender = await this.socialSenderService.findSenderById(senderID);
+
+        await this.notifyAgent(
+          {
+            messageId: data.messageId,
+            tabId: data.tabId,
+            messageType: data.messageType,
+            notifyAgentMessage:
+              data.notifyAgentMessage ?? NotifyAgentMessageTypeEnum.Workflow,
+            sender: sender
+          },
+          workflow.tabId,
+        );
 
         break;
     }

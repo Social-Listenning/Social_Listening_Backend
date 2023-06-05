@@ -70,18 +70,17 @@ export class HotQueueMessageService {
             const dataGrouping: HotQueueConversationGrouping = {
               senderId: userSend,
               messageType: conversation.messageType,
-              messageId: conversation.messageId,
+              messageId: null,
             };
 
-            if (
-              !listConversation.find(
-                (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-              )
-            ) {
+            const checked = !listConversation.find(
+              (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
+            )
+            
+            if (checked) {
+              listConversation.push(dataGrouping);
               const data = {
-                sender: !listConversation.find(
-                  (x) => JSON.stringify(x) === JSON.stringify(dataGrouping),
-                )
+                sender: checked
                   ? conversation.sender
                   : conversation.recipient,
                 from: conversation.senderId,
@@ -99,7 +98,6 @@ export class HotQueueMessageService {
                   data.type,
                 );
 
-              listConversation.push(dataGrouping);
               result.push({
                 ...data,
                 userSupportId: supportStatus.userId,
