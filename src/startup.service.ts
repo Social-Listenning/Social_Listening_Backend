@@ -119,6 +119,26 @@ export class AppService implements OnModuleInit {
         key: 'DIALOGFLOW_LOCATION',
         value: '',
       },
+      {
+        group: 'DOMAIN',
+        key: "DOMAIN_BOT_CONNECTOR",
+        value: ''
+      },
+      {
+        group: 'DOMAIN',
+        key: "DOMAIN_BOT",
+        value: ''
+      },
+      {
+        group: 'DOMAIN',
+        key: "DOMAIN_BACKEND",
+        value: ''
+      },
+      {
+        group: 'DOMAIN',
+        key: "DOMAIN_FRONTEND",
+        value: ''
+      }
     ];
     const listPerm = [
       UserPerm,
