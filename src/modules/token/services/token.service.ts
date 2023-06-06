@@ -29,7 +29,7 @@ export class TokenService {
 
     //Token Expire in  1 hour
     token.dateExpires.setTime(token.dateExpires.getTime() + 60 * 60 * 1000);
-    if (Date.now() >= token.dateExpires.getTime()) return true;
+    if (token.dateExpires.getTime() >= Date.now()) return true;
 
     return false;
   }

@@ -57,7 +57,7 @@ export class RolePermissionService {
           try {
             const exist = await this.getRolePermission(
               rolePermission.roleId,
-              rolePermission.roleId,
+              rolePermission.permissionId,
             );
 
             if (exist) {

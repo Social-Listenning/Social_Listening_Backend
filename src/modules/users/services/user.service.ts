@@ -322,6 +322,7 @@ export class UserService {
     });
 
     return listUser.map((user) => {
+      user.user.isActive = user.isActive;
       return excludeData(user.user, excludeUsers);
     });
   }

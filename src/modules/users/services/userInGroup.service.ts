@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ResponseMessage } from 'src/common/enum/ResponseMessage.enum';
 import { PrismaService } from 'src/config/database/database.config.service';
 
 @Injectable()
@@ -51,5 +52,17 @@ export class UserInGroupService {
       where: { id: data.id },
       data: { isActive: false },
     });
+  }
+
+  async checkActivate(userId:string){
+    try{
+      const user = await this.prismaService.userInGroup.findFirst({
+        where: {userId: userId, isActive: true}
+      });
+      return user;
+    }
+    catch (error){
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
   }
 }

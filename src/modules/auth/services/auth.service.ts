@@ -111,6 +111,10 @@ export class AuthService {
       );
 
       if (!isPasswordMatching) throw new Error('Wrong credentials provided');
+      
+      const checkActive = await this.userInGroupService.checkActivate(user.id);
+      if (!checkActive) throw new Error("Your account have been deactivated or deleted")
+
       result.result = excludeData(user, [
         'password',
         'createdAt',
@@ -123,7 +127,7 @@ export class AuthService {
       this.logger.log(`Email ${email} login account fail`);
       result.message = error.message;
       throw new HttpException(
-        'Wrong credentials provided',
+        error.message,
         HttpStatus.BAD_REQUEST,
       );
     }
