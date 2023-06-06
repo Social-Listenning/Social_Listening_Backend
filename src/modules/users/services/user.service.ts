@@ -475,6 +475,56 @@ export class UserService {
     return checkEmail && checkPassword;
   }
 
+  async getRoleAndPermission(userId: string, roleName: string){
+    try{
+      const user = await this.prismaService.user.findFirst({
+        where: { id: userId },
+        include: { role: true },
+      });
+      const newData = excludeData(user, excludeUser);
+      const role = await this.prismaService.role.findFirst({
+        where: {roleName: roleName}
+      })
+      const listPermission =
+        await this.rolePermissionService.getAllPermissionOfRole(role.id);
+      return {
+        ...newData,
+        role: roleName,
+        permissions: listPermission,
+      };
+    }
+    catch (error){
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
+
+  async getRoleOfUser(userId: string){
+    try{
+      const listRole = await this.prismaService.userInTab.findMany({
+        where: {userId: userId, delete: false},
+        include: {role: true}
+      })
+      let maxRoleLevel = -1;
+      listRole.forEach(x => {
+        console.log(x.role);
+        maxRoleLevel = Math.max(maxRoleLevel, x.role.level)
+      });
+      switch (maxRoleLevel) {
+        case 5:
+          return 'ADMIN';
+        case 4: 
+          return 'OWNER';
+        case 3: 
+          return 'MANAGER'
+        default:
+          return 'SUPPORTER'
+      }
+    }
+    catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE)
+    }
+  }
+
   private validateEmail = (email: string) => {
     return email.match(
       /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,

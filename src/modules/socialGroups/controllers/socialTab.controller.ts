@@ -3,6 +3,7 @@ import {
   Delete,
   Get,
   Param,
+  Post,
   Put,
   Req,
   UseGuards,
@@ -10,6 +11,7 @@ import {
 import { SocialTabService } from '../services/socialTab.service';
 import { PermissionGuard } from 'src/modules/auth/guards/permission.guard';
 import { SocialTabPerm } from '../enum/permission.enum';
+import { SocialNetworkPerm } from '../../socialNetworks/enum/permission.enum'
 import { ReturnResult } from 'src/common/models/dto/returnResult';
 import { RequestWithUser } from 'src/modules/auth/interface/requestWithUser.interface';
 import { SocialTab } from '../models/socialGroup.model';
@@ -22,7 +24,7 @@ export class SocialTabController {
   constructor(
     private readonly socialTabService: SocialTabService,
     private readonly workflowService: WorkflowService,
-  ) {}
+  ) { }
 
   @Get('/:id/working/type/:messageType')
   @UseGuards(APIKeyGuard)
@@ -81,7 +83,7 @@ export class SocialTabController {
   }
 
   @Delete('/:id')
-  @UseGuards(PermissionGuard(SocialTabPerm.deleteSocialTab.permission))
+  @UseGuards(PermissionGuard(SocialNetworkPerm.disconnectSocialNetwork.permission))
   async removeSocialTab(@Req() request: RequestWithUser, @Param() { id }) {
     const result = new ReturnResult<SocialTab>();
     try {
@@ -92,6 +94,19 @@ export class SocialTabController {
       const tab = await this.socialTabService.removeTabById(id);
       result.result = tab;
     } catch (error) {
+      result.message = error.message;
+    }
+    return result;
+  }
+
+  @Post('/get-all-tab')
+  async getAllTab(){
+    const result = new ReturnResult<object[]>();
+    try{
+      const listTab = await this.socialTabService.getAllTab();
+      result.result = listTab;
+    }
+    catch (error){
       result.message = error.message;
     }
     return result;

@@ -24,6 +24,7 @@ import { UpdatePasswordDTO } from '../dtos/updatePassword.dto';
 import { RecoveryPasswordPayload } from '../dtos/recoveryPassword.payload';
 import { TokenService } from 'src/modules/token/services/token.service';
 import { SocialGroupService } from 'src/modules/socialGroups/services/socialGroup.service';
+import { UserInTabService } from './../../users/services/userInTab.service';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +38,7 @@ export class AuthService {
     private readonly emailQueueService: EmailQueueService,
     private readonly socialGroupService: SocialGroupService,
     private readonly userInGroupService: UserInGroupService,
-  ) {}
+  ) { }
 
   async register(registerData: RegisterDTO) {
     let result = new ReturnResult<User>();
@@ -112,8 +113,11 @@ export class AuthService {
 
       if (!isPasswordMatching) throw new Error('Wrong credentials provided');
       
+      const userInfo = await this.userService.getUserInfo(user.id);
       const checkActive = await this.userInGroupService.checkActivate(user.id);
-      if (!checkActive) throw new Error("Your account have been deactivated or deleted")
+
+      if (!checkActive && userInfo.role !== 'ADMIN')
+        throw new Error('Your account have been deactivated or deleted');
 
       result.result = excludeData(user, [
         'password',
@@ -147,7 +151,17 @@ export class AuthService {
       'ACTIVATE_ACCOUNT',
     );
 
-    const userData = await this.getUserInfo(userId);
+    let userData = null
+    // const userData = await this.getUserInfo(userId);
+    const role = await this.userService.getUserInfo(userId);
+    if (role.role === 'ADMIN')  userData = role;
+    else {
+      const roleInfo = await this.userService.getRoleOfUser(userId);
+      console.log(roleInfo);
+      const dataReturn = await this.userService.getRoleAndPermission(userId, roleInfo);
+      userData = dataReturn;
+    }
+
     const payload = userData;
     const token = this.jwtService.sign(payload, {
       secret: tokenSecretSetting.value,

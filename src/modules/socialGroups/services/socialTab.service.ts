@@ -82,4 +82,13 @@ export class SocialTabService {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
   }
+
+  async getAllTab() {
+    try {
+      const listTab = await this.prismaService.socialTab.findMany({});
+      return listTab;
+    } catch (error) {
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
+    }
+  }
 }

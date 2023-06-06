@@ -112,6 +112,7 @@ model SocialTab {
   groupId          String
   delete           Boolean            @default(false)
   isWorked         Boolean            @default(false)
+  createdAt        DateTime           @default(now())
   extendData       String?
   UserInTab        UserInTab[]
   SocialNetwork    SocialNetwork      @relation(fields: [socialId], references: [id])

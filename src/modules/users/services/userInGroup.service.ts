@@ -65,4 +65,16 @@ export class UserInGroupService {
       throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE);
     }
   }
+
+  async getAllUser(){
+    try{
+      console.log("call this")
+      const data =  await this.prismaService.userInGroup.findMany();
+      return data;
+    }
+    catch(error){
+      console.log(error.message)
+      throw new Error(ResponseMessage.MESSAGE_TECHNICAL_ISSUE)
+    }
+  }
 }

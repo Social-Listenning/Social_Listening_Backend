@@ -527,4 +527,18 @@ export class UserController {
     }
     return result;
   }
+
+  @Post('get-all-user')
+  @UseGuards(JWTAuthGuard)
+  async getAllUser() {
+    const result = new ReturnResult<object[]>();
+    try{
+      const users = await this.userInGroupService.getAllUser();
+      result.result = users;
+    }
+    catch (error){
+      result.message = error.message
+    }
+    return result;
+  }
 }
