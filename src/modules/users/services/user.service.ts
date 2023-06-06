@@ -506,9 +506,14 @@ export class UserService {
       })
       let maxRoleLevel = -1;
       listRole.forEach(x => {
-        console.log(x.role);
         maxRoleLevel = Math.max(maxRoleLevel, x.role.level)
       });
+
+      if (maxRoleLevel === -1) {
+        const data = await this.getUserInfo(userId);
+        return data.role;
+      }
+
       switch (maxRoleLevel) {
         case 5:
           return 'ADMIN';

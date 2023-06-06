@@ -460,10 +460,10 @@ export class WorkflowService {
       case WorkflowNodeType.ReceiveMessage:
         break;
       case WorkflowNodeType.SentimentAnalysis:
-        this.httpService.post(`${URI}/sentiment`, data).subscribe();
+        this.httpService.post(`${URI.value}/sentiment`, data).subscribe();
         break;
       case WorkflowNodeType.ResponseMessage:
-        this.httpService.post(`${URI}/reply-message`, data).subscribe();
+        this.httpService.post(`${URI.value}/reply-message`, data).subscribe();
         break;
       case WorkflowNodeType.NotifyAgent:
         const workflow = await this.getWorkflowById(flowId);
